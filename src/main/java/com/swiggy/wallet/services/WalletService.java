@@ -2,14 +2,13 @@ package com.swiggy.wallet.services;
 
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidMoneyException;
+import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.WalletRequestModel;
 import com.swiggy.wallet.models.WalletResponseModel;
 import com.swiggy.wallet.repositories.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @Service
 public class WalletService implements IWalletService {
@@ -18,43 +17,31 @@ public class WalletService implements IWalletService {
 
     @Override
     public WalletResponseModel withdraw(Long id, WalletRequestModel walletRequestModel) {
-        if (walletRequestModel.getMoney() < 0) {
-            throw new InvalidMoneyException("Money should be positive.");
-        }
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
 
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Wallet not found"));
-        if (wallet.getMoney() < walletRequestModel.getMoney()) {
-            throw new InsufficientMoneyException("Don't have enough money.");
-        }
-
-        int updatedBalance = wallet.getMoney() - walletRequestModel.getMoney();
-        wallet.setMoney(updatedBalance);
+        wallet.withdraw(walletRequestModel.getAmount(), walletRequestModel.getCurrency());
         walletRepository.save(wallet);
-        return new WalletResponseModel(wallet.getMoney());
+        return new WalletResponseModel(wallet.getAmount());
     }
 
     @Override
     public WalletResponseModel deposit(Long id, WalletRequestModel walletRequestModel) {
-        if (walletRequestModel.getMoney() < 0) {
-            throw new InvalidMoneyException("Money should be positive.") ;
-        }
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Wallet not found"));
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
 
-        int updatedBalance = wallet.getMoney() + walletRequestModel.getMoney();
-        wallet.setMoney(updatedBalance);
+        wallet.deposit(walletRequestModel.getAmount(), walletRequestModel.getCurrency());
         walletRepository.save(wallet);
-        return new WalletResponseModel(wallet.getMoney());
+        return new WalletResponseModel(wallet.getAmount());
     }
 
     @Override
     public WalletResponseModel create() {
         Wallet wallet = walletRepository.save(new Wallet());
-        return new WalletResponseModel(wallet.getMoney());
+        return new WalletResponseModel(wallet.getAmount());
     }
 
     @Override
     public WalletResponseModel checkBalance(Long id) {
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Wallet not found"));
-        return new WalletResponseModel(wallet.getMoney());
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
+        return new WalletResponseModel(wallet.getAmount());
     }
 }

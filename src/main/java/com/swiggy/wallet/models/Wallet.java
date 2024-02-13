@@ -1,5 +1,8 @@
 package com.swiggy.wallet.models;
 
+import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.execptions.InsufficientMoneyException;
+import com.swiggy.wallet.execptions.InvalidMoneyException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,8 +19,27 @@ public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int money;
+    private Double amount;
     public Wallet() {
-        this.money = 0;
+        this.amount = 0.0;
+    }
+    public void withdraw(double amount, Currency currency) {
+        if (amount < 0) {
+            throw new InvalidMoneyException("Money should be positive.");
+        }
+
+        double amountInBaseCurrency = currency.convertToBase(amount);
+        if (this.amount < amountInBaseCurrency) {
+            throw new InsufficientMoneyException("Don't have enough money.");
+        }
+        this.amount = this.amount - amountInBaseCurrency;
+    }
+
+    public void deposit(double amount, Currency currency) {
+        if (amount < 0) {
+            throw new InvalidMoneyException("Money should be positive.");
+        }
+        double amountInBaseCurrency = currency.convertToBase(amount);
+        this.amount = this.amount + amountInBaseCurrency;
     }
 }

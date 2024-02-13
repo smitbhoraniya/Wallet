@@ -1,7 +1,6 @@
 package com.swiggy.wallet.models;
 
 import com.swiggy.wallet.enums.Currency;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class WalletRequestModel {
-    private Double amount;
-    @Enumerated
+public class Money {
+    private double amount;
     private Currency currency;
 }
