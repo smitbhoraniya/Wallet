@@ -36,7 +36,7 @@ public class WalletService implements IWalletService {
     @Override
     public WalletResponseModel deposit(Long id, WalletRequestModel walletRequestModel) {
         if (walletRequestModel.getMoney() < 0) {
-            throw new InsufficientMoneyException("Money should be positive.") ;
+            throw new InvalidMoneyException("Money should be positive.") ;
         }
         Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Wallet not found"));
 
