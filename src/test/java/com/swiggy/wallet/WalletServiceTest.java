@@ -1,75 +1,72 @@
 package com.swiggy.wallet;
 
-import com.swiggy.wallet.models.Wallet;
-import com.swiggy.wallet.models.WalletRequestModel;
-import com.swiggy.wallet.models.WalletResponseModel;
-import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class WalletServiceTest {
-    private WalletService walletService;
-    private Wallet wallet;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        wallet = new Wallet();
-        walletService = new WalletService(wallet);
+    @Test
+    void deposit_withValidAmount() throws Exception {
+        String depositRequestBody = "{\"money\": 100}";
+        mockMvc.perform(post("/api/wallet/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(depositRequestBody))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void withdraw_withValidAmount() {
-        WalletRequestModel requestModel = new WalletRequestModel(10);
-        WalletResponseModel expectedResponse = new WalletResponseModel(0);
-
-        walletService.deposit(new WalletRequestModel(10));
-        WalletResponseModel actualResponse = walletService.withdraw(requestModel);
-
-        assertEquals(expectedResponse.getMoney(), actualResponse.getMoney());
-        assertEquals(0, wallet.getMoney());
+    void deposit_withNegativeAmount_shouldThrowIllegalArgumentException() throws Exception {
+        String requestBody = "{\"money\": -50}";
+        mockMvc.perform(post("/api/wallet/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void withdraw_withNegativeAmount_shouldThrowIllegalArgumentException() {
-        WalletRequestModel requestModel = new WalletRequestModel(-50);
+    void withdraw_withValidAmount() throws Exception {
+        String depositRequestBody = "{\"money\": 100}";
+        mockMvc.perform(post("/api/wallet/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(depositRequestBody))
+                .andExpect(status().isOk());
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            walletService.withdraw(requestModel);
-        });
+        String requestBody = "{\"money\": 50}";
+        mockMvc.perform(post("/api/wallet/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.money").value(50));
     }
 
     @Test
-    void withdraw_withInsufficientFunds_shouldThrowUnsupportedOperationException() {
-        WalletRequestModel requestModel = new WalletRequestModel(50);
-
-        assertThrows(UnsupportedOperationException.class, () -> {
-            walletService.withdraw(requestModel);
-        });
+    void withdraw_withNegativeAmount_shouldThrowIllegalArgumentException() throws Exception {
+        String requestBody = "{\"money\": -50}";
+        mockMvc.perform(post("/api/wallet/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void deposit_withValidAmount() {
-        WalletRequestModel requestModel = new WalletRequestModel(50);
-        WalletResponseModel expectedResponse = new WalletResponseModel(50);
-
-        WalletResponseModel actualResponse = walletService.deposit(requestModel);
-
-        assertEquals(expectedResponse.getMoney(), actualResponse.getMoney());
-        assertEquals(50, wallet.getMoney());
-    }
-
-    @Test
-    void deposit_withNegativeAmount_shouldThrowIllegalArgumentException() {
-        WalletRequestModel requestModel = new WalletRequestModel(-50);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            walletService.deposit(requestModel);
-        });
+    void withdraw_withInsufficientFunds_shouldThrowUnsupportedOperationException() throws Exception {
+        String requestBody = "{\"money\": 50}";
+        mockMvc.perform(post("/api/wallet/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
     }
 }

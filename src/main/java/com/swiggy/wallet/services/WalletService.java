@@ -1,5 +1,7 @@
 package com.swiggy.wallet.services;
 
+import com.swiggy.wallet.execptions.InsufficientMoneyException;
+import com.swiggy.wallet.execptions.InvalidMoneyException;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.WalletRequestModel;
 import com.swiggy.wallet.models.WalletResponseModel;
@@ -18,10 +20,10 @@ public class WalletService implements IWalletService {
     @Override
     public WalletResponseModel withdraw(WalletRequestModel walletRequestModel) {
         if (walletRequestModel.getMoney() < 0) {
-            throw new IllegalArgumentException("Money should be positive.");
+            throw new InvalidMoneyException("Money should be positive.");
         }
         if (wallet.getMoney() < walletRequestModel.getMoney()) {
-            throw new UnsupportedOperationException("Don't have enough money.");
+            throw new InsufficientMoneyException("Don't have enough money.");
         }
         wallet.withdraw(walletRequestModel.getMoney());
         return new WalletResponseModel(wallet.getMoney());
@@ -30,7 +32,7 @@ public class WalletService implements IWalletService {
     @Override
     public WalletResponseModel deposit(WalletRequestModel walletRequestModel) {
         if (walletRequestModel.getMoney() < 0) {
-            throw new IllegalArgumentException("Money should be positive.") ;
+            throw new InsufficientMoneyException("Money should be positive.") ;
         }
         wallet.deposit(walletRequestModel.getMoney());
         return new WalletResponseModel(wallet.getMoney());
