@@ -1,25 +1,23 @@
 package com.swiggy.wallet.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.stereotype.Component;
+import lombok.Setter;
 
+@Entity
 @Getter
-@Component
+@Setter
+@AllArgsConstructor
 public class Wallet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private int money;
     public Wallet() {
         this.money = 0;
-    }
-
-    public int getMoney() {
-        return this.money;
-    }
-
-    public void deposit(int money) {
-        this.money += money;
-    }
-
-    public void withdraw(int money) {
-        this.money -= money;
     }
 }

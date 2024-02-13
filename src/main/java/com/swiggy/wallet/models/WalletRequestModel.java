@@ -1,14 +1,14 @@
 package com.swiggy.wallet.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class WalletRequestModel {
     private int money;
-
-    public WalletRequestModel() {}
-
-    public WalletRequestModel(int money) {
-        this.money = money;
-    }
-    public int getMoney() {
-        return this.money;
-    }
 }
