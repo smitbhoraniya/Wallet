@@ -14,23 +14,23 @@ public class WalletController {
     @Autowired
     private IWalletService walletService;
 
-    @PostMapping("/{id}/withdraw")
+    @PutMapping("/{id}/withdraw")
     public ResponseEntity<WalletResponseModel> withdraw(@PathVariable Long id, @RequestBody WalletRequestModel money) {
-        return new ResponseEntity<>(walletService.withdraw(id, money), HttpStatus.OK);
+        return ResponseEntity.ok(walletService.withdraw(id, money));
     }
 
-    @PostMapping("/{id}/deposit")
+    @PutMapping("/{id}/deposit")
     public ResponseEntity<WalletResponseModel> deposit(@PathVariable Long id, @RequestBody WalletRequestModel money) {
-        return new ResponseEntity<>(walletService.deposit(id, money), HttpStatus.OK);
+        return ResponseEntity.ok(walletService.deposit(id, money));
     }
 
     @PostMapping("")
     public ResponseEntity<WalletResponseModel> create() {
-        return new ResponseEntity<>(walletService.create(), HttpStatus.OK);
+        return ResponseEntity.ok(walletService.create());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<WalletResponseModel> checkBalance(@PathVariable Long id) {
-        return new ResponseEntity<>(walletService.checkBalance(id), HttpStatus.OK);
+        return ResponseEntity.ok(walletService.checkBalance(id));
     }
 }

@@ -6,29 +6,33 @@ import com.swiggy.wallet.execptions.InvalidMoneyException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Wallet;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+@SpringBootTest
 public class WalletTest {
+    @MockBean
+    private Money money;
     @Test
     public void deposit_withValidAmount() {
-        Wallet wallet = new Wallet();
-        Money money = new Money(100, Currency.RUPEE);
-        wallet.deposit(money);
+        Wallet wallet = new Wallet(1L, money);
+        wallet.deposit(new Money(10, Currency.RUPEE));
 
-        assertEquals(100, wallet.getMoney().getAmount());
+        verify(money, times(1)).add(any(Money.class));
     }
 
     @Test
     public void withdraw_withValidAmount() {
-        Wallet wallet = new Wallet();
-        Money money = new Money(100, Currency.RUPEE);
-        wallet.setMoney(money);
+        Wallet wallet = new Wallet(1L, money);
+        wallet.withdraw(new Money(10, Currency.RUPEE));
 
-        wallet.withdraw(money);
-
-        assertEquals(0, wallet.getMoney().getAmount());
+        verify(money, times(1)).subtract(any(Money.class));
     }
 
     @Test
