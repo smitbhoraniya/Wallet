@@ -1,6 +1,6 @@
 package com.swiggy.wallet.services;
 
-import com.swiggy.wallet.execptions.WalletNotFoundException;
+import com.swiggy.wallet.execptions.NotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.WalletRequestModel;
@@ -16,7 +16,7 @@ public class WalletService implements IWalletService {
 
     @Override
     public WalletResponseModel withdraw(Long id, WalletRequestModel walletRequestModel) {
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NotFoundException("Wallet not found"));
 
         wallet.withdraw(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         walletRepository.save(wallet);
@@ -25,7 +25,7 @@ public class WalletService implements IWalletService {
 
     @Override
     public WalletResponseModel deposit(Long id, WalletRequestModel walletRequestModel) {
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NotFoundException("Wallet not found"));
 
         wallet.deposit(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         walletRepository.save(wallet);
@@ -40,7 +40,7 @@ public class WalletService implements IWalletService {
 
     @Override
     public WalletResponseModel checkBalance(Long id) {
-        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new WalletNotFoundException("Wallet not found"));
+        Wallet wallet = walletRepository.findById(id).orElseThrow(() -> new NotFoundException("Wallet not found"));
         return new WalletResponseModel(wallet.getMoney());
     }
 }
