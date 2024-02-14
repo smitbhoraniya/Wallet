@@ -16,7 +16,6 @@ public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Embedded
     private Money money;
     public Wallet() {
         this.money = new Money(0, Currency.RUPEE);

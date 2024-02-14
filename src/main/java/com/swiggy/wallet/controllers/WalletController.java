@@ -4,9 +4,10 @@ import com.swiggy.wallet.models.WalletRequestModel;
 import com.swiggy.wallet.models.WalletResponseModel;
 import com.swiggy.wallet.services.IWalletService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -30,7 +31,12 @@ public class WalletController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WalletResponseModel> checkBalance(@PathVariable Long id) {
-        return ResponseEntity.ok(walletService.checkBalance(id));
+    public ResponseEntity<WalletResponseModel> getWalletById(@PathVariable Long id) {
+        return ResponseEntity.ok(walletService.getWalletById(id));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<WalletResponseModel>> getAllWallet() {
+        return ResponseEntity.ok(walletService.getAllWallets());
     }
 }

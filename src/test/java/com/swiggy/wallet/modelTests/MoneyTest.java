@@ -4,7 +4,6 @@ import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidMoneyException;
 import com.swiggy.wallet.models.Money;
-import com.swiggy.wallet.models.Wallet;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +16,7 @@ public class MoneyTest {
         Money money1 = new Money(100, Currency.RUPEE);
         money.add(money1);
 
-        assertEquals(200, money.getAmount());
+        assertEquals(new Money(200, Currency.RUPEE), money);
     }
 
     @Test
@@ -26,7 +25,7 @@ public class MoneyTest {
         Money money1 = new Money(100, Currency.DOLLAR);
         money.add(money1);
 
-        assertEquals(8100, money.getAmount());
+        assertEquals(new Money(8100, Currency.RUPEE), money);
     }
 
     @Test
@@ -40,7 +39,7 @@ public class MoneyTest {
         Money money1 = new Money(100, Currency.RUPEE);
         money.subtract(money1);
 
-        assertEquals(0, money.getAmount());
+        assertEquals(new Money(0, Currency.RUPEE), money);
     }
 
     @Test
@@ -49,7 +48,7 @@ public class MoneyTest {
         Money money1 = new Money(1, Currency.DOLLAR);
         money.subtract(money1);
 
-        assertEquals(20, money.getAmount());
+        assertEquals(new Money(20, Currency.RUPEE), money);
     }
 
     @Test

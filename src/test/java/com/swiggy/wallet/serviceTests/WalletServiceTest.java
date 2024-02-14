@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -121,9 +123,7 @@ public class WalletServiceTest {
 
     @Test
     void create_validWallet() {
-        Wallet wallet = new Wallet();
-        wallet.setId(1L);
-        wallet.setMoney(new Money(0, Currency.RUPEE));
+        Wallet wallet = new Wallet(1L, new Money(0, Currency.RUPEE));
         when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
 
         WalletResponseModel response = walletService.create();
@@ -137,13 +137,23 @@ public class WalletServiceTest {
     void get_validWallet() {
         long walletId = 1;
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
-        walletService.checkBalance(walletId);
+        walletService.getWalletById(walletId);
 
         verify(walletRepository, times(1)).findById(anyLong());
     }
 
     @Test
     void get_inValidWallet() {
-        assertThrows(NotFoundException.class, () -> walletService.checkBalance(1L));
+        assertThrows(NotFoundException.class, () -> walletService.getWalletById(1L));
+    }
+
+    @Test
+    void getAll_wallets() {
+        Wallet wallet1 = new Wallet(1L, new Money());
+        Wallet wallet2 = new Wallet(2L, new Money());
+        when(walletRepository.findAll()).thenReturn(Arrays.asList(wallet1, wallet2));
+        List<WalletResponseModel> wallets = walletService.getAllWallets();
+
+        assertEquals(2L, wallets.size());
     }
 }

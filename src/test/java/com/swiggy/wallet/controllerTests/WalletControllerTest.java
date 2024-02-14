@@ -90,6 +90,16 @@ public class WalletControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(walletService, times(1)).checkBalance(anyLong());
+        verify(walletService, times(1)).getWalletById(anyLong());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getAll_wallet() throws Exception {
+        mockMvc.perform(get("/api/wallet")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(walletService, times(1)).getAllWallets();
     }
 }
