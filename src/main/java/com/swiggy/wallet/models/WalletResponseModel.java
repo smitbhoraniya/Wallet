@@ -8,6 +8,5 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class WalletResponseModel {
-    private Double amount;
-
+    private Money money;
 }

@@ -3,6 +3,7 @@ package com.swiggy.wallet.serviceTests;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidMoneyException;
+import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.WalletRequestModel;
 import com.swiggy.wallet.models.WalletResponseModel;
@@ -38,15 +39,17 @@ public class WalletServiceTest {
         double depositMoney = 50;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         WalletResponseModel actualResponseModel = walletService.deposit(walletId, requestModel);
 
-        WalletResponseModel responseModel = new WalletResponseModel(150.0);
+        Money responseMoney = new Money(150.0, Currency.RUPEE);
+        WalletResponseModel responseModel = new WalletResponseModel(responseMoney);
         assertEquals(responseModel, actualResponseModel);
-        assertEquals(150, wallet.getAmount());
+        assertEquals(responseMoney, wallet.getMoney());
     }
 
     @Test
@@ -55,12 +58,13 @@ public class WalletServiceTest {
         double depositMoney = -50;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         assertThrows(InvalidMoneyException.class, () -> walletService.deposit(walletId, requestModel));
-        assertEquals(100, wallet.getAmount());
+        assertEquals(money, wallet.getMoney());
     }
 
     @Test
@@ -69,15 +73,17 @@ public class WalletServiceTest {
         double depositMoney = 50;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         WalletResponseModel actualResponseModel = walletService.withdraw(walletId, requestModel);
 
-        WalletResponseModel responseModel = new WalletResponseModel(50.0);
+        Money responseMoney = new Money(50, Currency.RUPEE);
+        WalletResponseModel responseModel = new WalletResponseModel(responseMoney);
         assertEquals(responseModel, actualResponseModel);
-        assertEquals(50, wallet.getAmount());
+        assertEquals(responseMoney, wallet.getMoney());
     }
 
     @Test
@@ -86,12 +92,13 @@ public class WalletServiceTest {
         double depositMoney = -50;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         assertThrows(InvalidMoneyException.class, () -> walletService.withdraw(walletId, requestModel));
-        assertEquals(100, wallet.getAmount());
+        assertEquals(money, wallet.getMoney());
     }
 
     @Test
@@ -100,12 +107,13 @@ public class WalletServiceTest {
         double depositMoney = 150;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw(walletId, requestModel));
-        assertEquals(100, wallet.getAmount());
+        assertEquals(money, wallet.getMoney());
     }
 
     @Test
@@ -114,15 +122,17 @@ public class WalletServiceTest {
         double depositMoney = 1;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.DOLLAR);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(100.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         WalletResponseModel actualResponseModel = walletService.deposit(walletId, requestModel);
 
-        WalletResponseModel responseModel = new WalletResponseModel(180.0);
+        Money responseMoney = new Money(180.0, Currency.RUPEE);
+        WalletResponseModel responseModel = new WalletResponseModel(responseMoney);
         assertEquals(responseModel, actualResponseModel);
-        assertEquals(180, wallet.getAmount());
+        assertEquals(responseMoney, wallet.getMoney());
     }
 
     @Test
@@ -131,14 +141,16 @@ public class WalletServiceTest {
         double depositMoney = 1;
         WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.DOLLAR);
         Wallet wallet = new Wallet();
+        Money money = new Money(100.0, Currency.RUPEE);
         wallet.setId(walletId);
-        wallet.setAmount(200.0);
+        wallet.setMoney(money);
         when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
 
         WalletResponseModel actualResponseModel = walletService.withdraw(walletId, requestModel);
 
-        WalletResponseModel responseModel = new WalletResponseModel(120.0);
+        Money responseMoney = new Money(20.0, Currency.RUPEE);
+        WalletResponseModel responseModel = new WalletResponseModel(responseMoney);
         assertEquals(responseModel, actualResponseModel);
-        assertEquals(120, wallet.getAmount());
+        assertEquals(responseMoney, wallet.getMoney());
     }
 }
