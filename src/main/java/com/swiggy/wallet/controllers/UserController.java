@@ -1,16 +1,16 @@
 package com.swiggy.wallet.controllers;
 
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
+import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.User;
+import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
+import com.swiggy.wallet.models.responseModels.UserResponseModel;
 import com.swiggy.wallet.services.interfaces.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -19,8 +19,19 @@ public class UserController {
     private IUserService userService;
 
     @PostMapping("")
-    public ResponseEntity<User> registerUser(@RequestBody UserRequestModel user) throws UserAlreadyExistsException {
-        User returnedUser = userService.register(user);
+    public ResponseEntity<UserResponseModel> registerUser(@RequestBody UserRequestModel user) {
+        UserResponseModel returnedUser = userService.register(user);
         return new ResponseEntity<>(returnedUser, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("")
+    public void deleteUser() {
+        userService.delete();
+    }
+
+    @PutMapping("/transaction")
+    public ResponseEntity<TransactionResponseModel> transaction(@RequestBody TransactionRequestModel transactionRequestModel) {
+        TransactionResponseModel response = userService.transaction(transactionRequestModel);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -4,7 +4,6 @@ import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidAmountException;
-import com.swiggy.wallet.execptions.NotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
@@ -160,5 +159,18 @@ public class WalletServiceTest {
         List<WalletResponseModel> wallets = walletService.fetchWallets();
 
         assertEquals(2L, wallets.size());
+    }
+
+    @Test
+    void expectTransactionSuccessful() {
+        Money moneyForTransaction = new Money(100, Currency.RUPEE);
+        Wallet sendersWallet = wallet;
+        sendersWallet.deposit(new Money(1000, Currency.RUPEE));
+        Wallet receiversWallet = wallet;
+
+        walletService.transact(sendersWallet, receiversWallet, moneyForTransaction);
+
+        verify(sendersWallet, times(1)).withdraw(moneyForTransaction);
+        verify(receiversWallet, times(1)).deposit(moneyForTransaction);
     }
 }

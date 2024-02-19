@@ -1,6 +1,6 @@
 package com.swiggy.wallet.models.responseModels;
 
-import com.swiggy.wallet.models.Wallet;
+import com.swiggy.wallet.models.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseModel {
-    private String username;
-    private Wallet wallet;
+public class TransactionResponseModel {
+    private String senderUsername;
+    private String receiverUsername;
+    private Money transferredAmount;
 }

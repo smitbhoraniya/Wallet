@@ -3,6 +3,7 @@ package com.swiggy.wallet.services;
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
+import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.repositories.UserRepository;
@@ -41,5 +42,11 @@ public class WalletService implements IWalletService {
     @Override
     public List<WalletResponseModel> fetchWallets() {
         return walletRepository.findAll().stream().map(wallet -> new WalletResponseModel(wallet.getMoney())).toList();
+    }
+
+    @Override
+    public void transact(Wallet senderWallet, Wallet receiverWallet, Money money) {
+        senderWallet.withdraw(money);
+        receiverWallet.deposit(money);
     }
 }

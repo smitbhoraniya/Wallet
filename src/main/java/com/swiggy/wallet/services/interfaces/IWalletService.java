@@ -1,5 +1,7 @@
 package com.swiggy.wallet.services.interfaces;
 
+import com.swiggy.wallet.models.Money;
+import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 
@@ -9,4 +11,5 @@ public interface IWalletService {
     WalletResponseModel withdraw(String username, WalletRequestModel money);
     WalletResponseModel deposit(String username, WalletRequestModel money);
     List<WalletResponseModel> fetchWallets();
+    void transact(Wallet wallet, Wallet wallet1, Money money);
 }
