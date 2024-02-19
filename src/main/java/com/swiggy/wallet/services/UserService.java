@@ -22,8 +22,6 @@ public class UserService implements IUserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private WalletService walletService;
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -44,21 +42,5 @@ public class UserService implements IUserService {
         }
 
         userRepository.delete(userToDelete.get());
-    }
-
-    @Override
-    public TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User sender = userRepository.findByUserName(username)
-                .orElseThrow(() -> new UserNotFoundException("User "+ username + " not found."));
-        User receiver = userRepository.findByUserName(transactionRequestModel.getReceiverName())
-                .orElseThrow(() -> new UserNotFoundException("User "+ transactionRequestModel.getReceiverName() + " not found."));
-
-        walletService.transact(sender.getWallet(), receiver.getWallet(), transactionRequestModel.getMoney());
-
-        userRepository.save(sender);
-        userRepository.save(receiver);
-
-        return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney());
     }
 }

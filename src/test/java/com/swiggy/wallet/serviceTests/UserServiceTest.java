@@ -32,19 +32,12 @@ import static org.mockito.MockitoAnnotations.openMocks;
 public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private WalletService walletService;
-
     @Mock
     private SecurityContext securityContext;
-
     @Mock
     Authentication authentication;
-
     @InjectMocks
     private UserService userService;
 
@@ -107,40 +100,5 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.delete());
         verify(userRepository, times(1)).findByUserName("NoUser");
         verify(userRepository, never()).delete(any());
-    }
-
-    @Test
-    void expectTransactionSuccessful() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
-        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", new Money(100.0, Currency.RUPEE));
-        when(authentication.getName()).thenReturn("sender");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
-        when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
-
-        userService.transaction(requestModel);
-
-        verify(walletService, times(1)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
-        verify(userRepository, times(1)).save(sender);
-        verify(userRepository, times(1)).save(receiver);
-    }
-
-    @Test
-    void expectReceiverNotFoundOnTransaction() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
-        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", new Money(100.0, Currency.RUPEE));
-        when(authentication.getName()).thenReturn("sender");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
-        when(userRepository.findByUserName("receiver")).thenReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class,()-> userService.transaction(requestModel));
-        verify(walletService, times(0)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
-        verify(userRepository, times(0)).save(sender);
-        verify(userRepository, times(0)).save(receiver);
     }
 }

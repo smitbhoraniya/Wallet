@@ -1,14 +1,9 @@
 package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
-import com.swiggy.wallet.models.Money;
-import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
-import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
-import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
 import com.swiggy.wallet.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -78,18 +72,5 @@ public class UsersControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         verify(userService, times(1)).delete();
-    }
-
-    @Test
-    @WithMockUser(username = "sender")
-    void expectTransactionSuccessful() throws Exception {
-        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", new Money(100, Currency.RUPEE));
-        String requestJson = objectMapper.writeValueAsString(transactionRequestModel);
-
-        mockMvc.perform(put("/api/v1/users/transaction")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isOk());
-        verify(userService, times(1)).transaction(transactionRequestModel);
     }
 }

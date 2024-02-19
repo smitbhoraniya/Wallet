@@ -10,5 +10,4 @@ import com.swiggy.wallet.models.responseModels.UserResponseModel;
 public interface IUserService {
     UserResponseModel register(UserRequestModel user);
     void delete();
-    TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel);
 }

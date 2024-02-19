@@ -28,10 +28,4 @@ public class UserController {
     public void deleteUser() {
         userService.delete();
     }
-
-    @PutMapping("/transaction")
-    public ResponseEntity<TransactionResponseModel> transaction(@RequestBody TransactionRequestModel transactionRequestModel) {
-        TransactionResponseModel response = userService.transaction(transactionRequestModel);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 }
