@@ -1,24 +1,20 @@
 package com.swiggy.wallet.models;
 
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.execptions.InsufficientMoneyException;
-import com.swiggy.wallet.execptions.InvalidMoneyException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Entity
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
+@Entity
 public class Wallet {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
     private Money money;
     public Wallet() {
-        this.money = new Money(0, Currency.RUPEE);
+        this.money = new Money(0.0, Currency.RUPEE);
     }
     public void withdraw(Money money) {
         this.money.subtract(money);

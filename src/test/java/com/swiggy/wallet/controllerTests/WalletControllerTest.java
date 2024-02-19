@@ -2,9 +2,10 @@ package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.models.WalletRequestModel;
+import com.swiggy.wallet.models.Money;
+import com.swiggy.wallet.models.requestModels.WalletRequestModel;
+import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.services.WalletService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,73 +34,64 @@ public class WalletControllerTest {
     @MockBean
     private WalletService walletService;
 
-    @BeforeEach
-    void setUp() {
-        reset(walletService);
-    }
-
     @Test
-    @WithMockUser(roles = "USER")
-    void deposit_withValidAmount() throws Exception {
-        long walletId = 1;
-        double depositMoney = 50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
+    @WithMockUser(username = "user")
+    void expectDepositMoney() throws Exception {
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/wallet/{walletId}/deposit", walletId)
+        mockMvc.perform(put("/api/v1/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                         .andExpect(status().isOk());
 
-        verify(walletService, times(1)).deposit(anyLong(), any(WalletRequestModel.class));
+        verify(walletService, times(1)).deposit(anyString(), any(WalletRequestModel.class));
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    void withdraw_withValidAmount() throws Exception {
-        long walletId = 1;
-        double depositMoney = 50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
+    void unauthorizedOnDeposit() throws Exception {
+        WalletRequestModel requestModel = new WalletRequestModel(100.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/wallet/{walletId}/withdraw", walletId)
+        mockMvc.perform(put("/api/v1/wallets/deposit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized());
+        verify(walletService, never()).deposit(anyString(),any());
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void expectWithdrawMoney() throws Exception {
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
+
+        String requestBody = objectMapper.writeValueAsString(requestModel);
+        mockMvc.perform(put("/api/v1/wallets/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
-        verify(walletService, times(1)).withdraw(anyLong(), any(WalletRequestModel.class));
+        verify(walletService, times(1)).withdraw(anyString(), any(WalletRequestModel.class));
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    void create_validWallet() throws Exception {
-        mockMvc.perform(post("/api/wallet")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        verify(walletService, times(1)).create();
+    void unauthorizedOnWithdraw() throws Exception {
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
+
+        String requestBody = objectMapper.writeValueAsString(requestModel);
+        mockMvc.perform(put("/api/v1/wallets/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized());
+        verify(walletService, never()).withdraw(anyString(),any());
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    void get_validWallet() throws Exception {
-        long walletId = 1;
-        mockMvc.perform(post("/api/wallet")
+    @WithMockUser(username = "user")
+    void expectGetAllWallets() throws Exception {
+        mockMvc.perform(get("/api/v1/wallets")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/wallet/{walletId}", walletId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(walletService, times(1)).getWalletById(anyLong());
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void getAll_wallet() throws Exception {
-        mockMvc.perform(get("/api/wallet")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        verify(walletService, times(1)).getAllWallets();
+        verify(walletService, times(1)).fetchWallets();
     }
 }

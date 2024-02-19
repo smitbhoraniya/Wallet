@@ -1,20 +1,23 @@
 package com.swiggy.wallet.serviceTests;
 
 import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
-import com.swiggy.wallet.execptions.InvalidMoneyException;
+import com.swiggy.wallet.execptions.InvalidAmountException;
 import com.swiggy.wallet.execptions.NotFoundException;
 import com.swiggy.wallet.models.Money;
+import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
-import com.swiggy.wallet.models.WalletRequestModel;
-import com.swiggy.wallet.models.WalletResponseModel;
+import com.swiggy.wallet.models.requestModels.WalletRequestModel;
+import com.swiggy.wallet.models.responseModels.WalletResponseModel;
+import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.repositories.WalletRepository;
 import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,136 +26,138 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 @SpringBootTest
 public class WalletServiceTest {
-    @Autowired
+    @InjectMocks
     private WalletService walletService;
-    @MockBean
+    @Mock
     private WalletRepository walletRepository;
-    @MockBean
+    @Mock
+    private UserRepository userRepository;
+    @Mock
     private Wallet wallet;
     @BeforeEach
     void setUp() {
-        reset(walletRepository);
+        openMocks(this);
     }
 
     @Test
-    void deposit_withValidAmount() {
-        long walletId = 1;
-        double depositMoney = 50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectDepositMoney() {
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(new Wallet());
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenReturn(user);
 
-        walletService.deposit(walletId, requestModel);
+        walletService.deposit("user", requestModel);
 
-        verify(wallet, times(1)).deposit(any(Money.class));
-        verify(walletRepository, times(1)).save(any(Wallet.class));
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(userRepository, times(1)).save(any());
     }
 
     @Test
-    void deposit_withNegativeAmount_shouldThrowInvalidMoneyException() {
-        long walletId = 1;
-        double depositMoney = -50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectAuthenticationFailedInDeposit() {
+        when(userRepository.findByUserName("nonExistentUser")).thenReturn(Optional.empty());
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
-        assertThrows(InvalidMoneyException.class, () -> walletService.deposit(walletId, requestModel));
+        assertThrows(AuthenticationFailedException.class, () -> {
+            walletService.deposit("nonExistentUser", requestModel);
+        });
     }
 
     @Test
-    void withdraw_withValidAmount() {
-        long walletId = 1;
-        double depositMoney = 50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectInvalidMoneyExceptionWithNegativeAmountOnDeposit() {
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(new Wallet());
+        WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        walletService.withdraw(walletId, requestModel);
-
-        verify(wallet, times(1)).withdraw(any(Money.class));
-        verify(walletRepository, times(1)).save(any(Wallet.class));
+        assertThrows(InvalidAmountException.class, () -> walletService.deposit("user", requestModel));
     }
 
     @Test
-    void withdraw_withNegativeAmount_shouldThrowInvalidMoneyException() {
-        long walletId = 1;
-        double depositMoney = -50;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectWithdrawMoney() {
+        Wallet wallet = new Wallet();
+        wallet.deposit(new Money(100, Currency.RUPEE));
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(wallet);
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenReturn(user);
 
-        assertThrows(InvalidMoneyException.class, () -> walletService.withdraw(walletId, requestModel));
+        walletService.withdraw("user", requestModel);
+
+
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(userRepository, times(1)).save(any());
     }
 
     @Test
-    void withdraw_withInsufficientFunds_shouldThrowInsufficientMoneyException() {
-        long walletId = 1;
-        double depositMoney = 150;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.RUPEE);
-        Wallet wallet1 = new Wallet();
-        wallet1.deposit(new Money(100, Currency.RUPEE));
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet1));
+    void expectInvalidMoneyExceptionWithNegativeAmountInWithdraw() {
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(new Wallet());
+        WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw(walletId, requestModel));
+        assertThrows(InvalidAmountException.class, () -> walletService.withdraw("user", requestModel));
     }
 
     @Test
-    void deposit_withValidDollar() {
-        long walletId = 1;
-        double depositMoney = 1;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.DOLLAR);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectInsufficientMoneyExceptionWithInsufficientFundsInWithdraw() {
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(new Wallet());
+        WalletRequestModel requestModel = new WalletRequestModel(200.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        walletService.deposit(walletId, requestModel);
-
-        verify(wallet, times(1)).deposit(any(Money.class));
-        verify(walletRepository, times(1)).save(any(Wallet.class));
+        assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw("user", requestModel));
     }
 
     @Test
-    void withdraw_withValidDollar() {
-        long walletId = 1;
-        double depositMoney = 1;
-        WalletRequestModel requestModel = new WalletRequestModel(depositMoney, Currency.DOLLAR);
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
+    void expectDepositDollars() {
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(new Wallet());
+        WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenReturn(user);
 
-        walletService.withdraw(walletId, requestModel);
+        walletService.deposit("user", requestModel);
 
-        verify(wallet, times(1)).withdraw(any(Money.class));
-        verify(walletRepository, times(1)).save(any(Wallet.class));
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(userRepository, times(1)).save(any());
     }
 
     @Test
-    void create_validWallet() {
-        Wallet wallet = new Wallet(1L, new Money(0, Currency.RUPEE));
-        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
+    void expectWithdrawDollars() {
+        Wallet wallet = new Wallet();
+        wallet.deposit(new Money(100, Currency.RUPEE));
+        User user = new User();
+        user.setUserName("user");
+        user.setWallet(wallet);
+        WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenReturn(user);
 
-        WalletResponseModel response = walletService.create();
+        walletService.withdraw("user", requestModel);
 
-        verify(walletRepository, times(1)).save(any(Wallet.class));
-        assertNotNull(response);
-        assertEquals(0, response.getMoney().getAmount());
+
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(userRepository, times(1)).save(any());
     }
 
     @Test
-    void get_validWallet() {
-        long walletId = 1;
-        when(walletRepository.findById(walletId)).thenReturn(Optional.of(wallet));
-        walletService.getWalletById(walletId);
-
-        verify(walletRepository, times(1)).findById(anyLong());
-    }
-
-    @Test
-    void get_inValidWallet() {
-        assertThrows(NotFoundException.class, () -> walletService.getWalletById(1L));
-    }
-
-    @Test
-    void getAll_wallets() {
-        Wallet wallet1 = new Wallet(1L, new Money());
-        Wallet wallet2 = new Wallet(2L, new Money());
+    void expectGetAllWallets() {
+        Wallet wallet1 = new Wallet(1, new Money());
+        Wallet wallet2 = new Wallet(2, new Money());
         when(walletRepository.findAll()).thenReturn(Arrays.asList(wallet1, wallet2));
-        List<WalletResponseModel> wallets = walletService.getAllWallets();
+        List<WalletResponseModel> wallets = walletService.fetchWallets();
 
         assertEquals(2L, wallets.size());
     }

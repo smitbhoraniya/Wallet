@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalErrorHandler {
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> invalidMoneyException(InvalidMoneyException exception) {
+    public ResponseEntity<ErrorResponse> invalidMoneyException(InvalidAmountException exception) {
         ErrorResponse errorResponse = new ErrorResponse();
 
         errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());

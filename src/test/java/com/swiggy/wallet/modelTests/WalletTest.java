@@ -27,21 +27,21 @@ public class WalletTest {
         openMocks(this);
     }
     @Test
-    public void deposit_withValidAmount() {
+    public void expectDepositMoney() {
         wallet.deposit(new Money(10, Currency.RUPEE));
 
         verify(money, times(1)).add(any(Money.class));
     }
 
     @Test
-    public void withdraw_withValidAmount() {
+    public void expectWithdrawMoney() {
         wallet.withdraw(new Money(10, Currency.RUPEE));
 
         verify(money, times(1)).subtract(any(Money.class));
     }
 
     @Test
-    public void withdraw_withInsufficientFunds_shouldThrowInsufficientMoneyException() {
+    public void withdrawWithInsufficientFundsShouldThrowInsufficientMoneyException() {
         Wallet wallet = new Wallet();
         Money money = new Money(100, Currency.RUPEE);
 

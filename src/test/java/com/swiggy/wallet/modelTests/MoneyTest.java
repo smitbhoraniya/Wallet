@@ -2,7 +2,7 @@ package com.swiggy.wallet.modelTests;
 
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
-import com.swiggy.wallet.execptions.InvalidMoneyException;
+import com.swiggy.wallet.execptions.InvalidAmountException;
 import com.swiggy.wallet.models.Money;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ public class MoneyTest {
 
     @Test
     public void moneyWithNegativeAmount() {
-        assertThrows(InvalidMoneyException.class, () -> new Money(-100, Currency.RUPEE));
+        assertThrows(InvalidAmountException.class, () -> new Money(-100, Currency.RUPEE));
     }
 
     @Test

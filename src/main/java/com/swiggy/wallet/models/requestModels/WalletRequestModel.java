@@ -1,4 +1,4 @@
-package com.swiggy.wallet.models;
+package com.swiggy.wallet.models.requestModels;
 
 import com.swiggy.wallet.enums.Currency;
 import jakarta.persistence.Enumerated;

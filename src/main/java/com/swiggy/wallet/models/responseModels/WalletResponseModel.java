@@ -1,5 +1,6 @@
-package com.swiggy.wallet.models;
+package com.swiggy.wallet.models.responseModels;
 
+import com.swiggy.wallet.models.Money;
 import lombok.*;
 
 @Getter
@@ -7,6 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WalletResponseModel {
-    private Long id;
     private Money money;
 }
