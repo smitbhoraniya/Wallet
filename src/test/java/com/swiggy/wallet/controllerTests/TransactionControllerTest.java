@@ -5,7 +5,6 @@ import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.services.TransactionService;
-import com.swiggy.wallet.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +51,21 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "user")
-    void expectFetchAll() throws Exception {
+    void expectFetchAllTransaction() throws Exception {
         mockMvc.perform(get("/api/v1/transaction")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        verify(transactionService, times(1)).fetchTransactions();
+        verify(transactionService, times(1)).fetchTransactions(any(), any());
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void expectFetchAllTransactionWithDate() throws Exception {
+        mockMvc.perform(get("/api/v1/transaction")
+                        .param("fromDateTime", "2024-02-19T15:06:42.598459")
+                        .param("toDateTime", "2024-02-19T15:06:50.598459")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        verify(transactionService, times(1)).fetchTransactions(any(), any());
     }
 }

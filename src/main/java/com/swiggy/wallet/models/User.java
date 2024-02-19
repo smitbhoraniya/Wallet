@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -22,6 +24,8 @@ public class User {
 
     @OneToOne(cascade = CascadeType.ALL)
     private Wallet wallet;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public User(String userName, String password) {
         this.userName = userName;

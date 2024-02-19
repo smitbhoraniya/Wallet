@@ -1,6 +1,7 @@
 package com.swiggy.wallet.serviceTests;
 
 import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Transaction;
@@ -20,8 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +55,9 @@ public class TransactionServiceTest {
     @Test
     void expectTransactionSuccessful() {
         User sender = new User("sender", "senderPassword");
+        sender.setUserId(1);
         User receiver = new User("receiver", "receiverPassword");
+        receiver.setUserId(2);
         TransactionRequestModel requestModel = new TransactionRequestModel("receiver", new Money(100.0, Currency.RUPEE));
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -67,6 +70,24 @@ public class TransactionServiceTest {
         verify(walletService, times(1)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
         verify(userRepository, times(1)).save(sender);
         verify(userRepository, times(1)).save(receiver);
+    }
+
+    @Test
+    void expectSameAccountExceptionInSameAccountTransaction() {
+        User sender = new User("sender", "senderPassword");
+        User receiver = new User("receiver", "receiverPassword");
+        TransactionRequestModel requestModel = new TransactionRequestModel("sender", new Money(100.0, Currency.RUPEE));
+        when(authentication.getName()).thenReturn("sender");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
+        when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
+
+        assertThrows(SameUserTransactionException.class, () -> transactionService.transaction(requestModel));
+
+        verify(walletService, times(0)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
+        verify(userRepository, times(0)).save(sender);
+        verify(userRepository, times(0)).save(receiver);
     }
 
     @Test
@@ -87,7 +108,7 @@ public class TransactionServiceTest {
     }
 
     @Test
-    void expectAllTransaction() {
+    void expectFetchAllTransaction() {
         User sender = new User("sender", "senderPassword");
         User receiver = new User("receiver", "receiverPassword");
         when(authentication.getName()).thenReturn("sender");
@@ -122,5 +143,26 @@ public class TransactionServiceTest {
 
         assertEquals(0, transactionResponseModelList.size());
         verify(transactionRepository, times(1)).findBySenderOrRecipientName(sender);
+    }
+
+    @Test
+    void expectListOfTransactionBeforeDateTime() {
+        User sender = new User("sender", "senderPassword");
+        User receiver = new User("receiver", "receiverPassword");
+        when(authentication.getName()).thenReturn("sender");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
+        when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
+        Transaction transaction = new Transaction(sender, receiver, new Money(10, Currency.RUPEE));
+        transaction.setCreatedAt(LocalDateTime.now().minusMonths(12));
+        LocalDateTime fromDateTime = LocalDateTime.now().minusHours(2);
+        LocalDateTime toDateTime = LocalDateTime.now();
+        when(transactionRepository.findBySenderOrRecipientNameAndDateTimeBefore(sender, fromDateTime, toDateTime)).thenReturn(List.of());
+
+        List<TransactionResponseModel> transactionResponseModelList = transactionService.fetchTransactions(fromDateTime, toDateTime);
+
+        assertEquals(0, transactionResponseModelList.size());
+        verify(transactionRepository, times(1)).findBySenderOrRecipientNameAndDateTimeBefore(sender, fromDateTime, toDateTime);
     }
 }

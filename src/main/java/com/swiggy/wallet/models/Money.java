@@ -14,6 +14,7 @@ import lombok.*;
 @EqualsAndHashCode
 public class Money {
     private double amount = 0;
+
     @Enumerated(EnumType.STRING)
     private Currency currency;
 

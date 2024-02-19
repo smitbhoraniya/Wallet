@@ -12,10 +12,13 @@ public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
     private Money money;
+
     public Wallet() {
         this.money = new Money(0.0, Currency.RUPEE);
     }
+
     public void withdraw(Money money) {
         this.money.subtract(money);
     }

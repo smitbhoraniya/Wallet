@@ -4,10 +4,12 @@ import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.services.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,8 +25,10 @@ public class TransactionController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<TransactionResponseModel>> fetchTransactions() {
-        List<TransactionResponseModel> response = transactionService.fetchTransactions();
+    public ResponseEntity<List<TransactionResponseModel>> fetchTransactions(
+            @RequestParam(required = false) LocalDateTime fromDateTime,
+            @RequestParam(required = false) LocalDateTime toDateTime) {
+        List<TransactionResponseModel> response = transactionService.fetchTransactions(fromDateTime, toDateTime);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
