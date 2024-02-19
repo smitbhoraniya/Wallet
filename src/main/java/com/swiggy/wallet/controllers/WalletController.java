@@ -4,7 +4,6 @@ import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.services.interfaces.IWalletService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

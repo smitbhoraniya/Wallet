@@ -2,14 +2,12 @@ package com.swiggy.wallet.models.responseModels;
 
 import com.swiggy.wallet.models.Money;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionResponseModel {

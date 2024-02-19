@@ -22,10 +22,12 @@ public class WalletTest {
     private Money money;
     @InjectMocks
     private Wallet wallet;
+
     @BeforeEach
     void setUp() {
         openMocks(this);
     }
+
     @Test
     public void expectDepositMoney() {
         wallet.deposit(new Money(10, Currency.RUPEE));

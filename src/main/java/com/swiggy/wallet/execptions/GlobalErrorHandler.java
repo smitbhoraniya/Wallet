@@ -18,6 +18,7 @@ public class GlobalErrorHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> insufficientMoneyException(InsufficientMoneyException exception) {
         ErrorResponse errorResponse = new ErrorResponse();
@@ -28,6 +29,7 @@ public class GlobalErrorHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> authenticationFailedException(AuthenticationFailedException exception) {
         ErrorResponse errorResponse = new ErrorResponse();
@@ -38,6 +40,7 @@ public class GlobalErrorHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> userAlreadyExistsException(UserAlreadyExistsException exception) {
         ErrorResponse errorResponse = new ErrorResponse();
@@ -70,6 +73,7 @@ public class GlobalErrorHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(Exception exception) {
         ErrorResponse errorResponse = new ErrorResponse();

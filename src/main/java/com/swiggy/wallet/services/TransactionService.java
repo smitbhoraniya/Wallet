@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class TransactionService implements ITransactionService {
@@ -27,13 +25,14 @@ public class TransactionService implements ITransactionService {
     private TransactionRepository transactionRepository;
     @Autowired
     private WalletService walletService;
+
     @Override
     public TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User sender = userRepository.findByUserName(username)
                 .orElseThrow(() -> new UserNotFoundException("User " + username + " not found."));
         User receiver = userRepository.findByUserName(transactionRequestModel.getReceiverName())
-                .orElseThrow(() -> new UserNotFoundException("User "+ transactionRequestModel.getReceiverName() + " not found."));
+                .orElseThrow(() -> new UserNotFoundException("User " + transactionRequestModel.getReceiverName() + " not found."));
 
         if (sender.getUserId() == receiver.getUserId()) {
             throw new SameUserTransactionException("Couldn't do transaction in same account.");
@@ -53,14 +52,13 @@ public class TransactionService implements ITransactionService {
     public List<TransactionResponseModel> fetchTransactions(LocalDateTime... dateTimes) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUserName(username)
-                .orElseThrow(() -> new UserNotFoundException("User "+ username + " not found."));
+                .orElseThrow(() -> new UserNotFoundException("User " + username + " not found."));
 
         List<Transaction> transactions = new ArrayList<>();
         if (dateTimes.length > 0 && dateTimes[0] != null && dateTimes[1] != null) {
             transactions = transactionRepository.findBySenderOrRecipientNameAndDateTimeBefore(user, dateTimes[0], dateTimes[1]);
-        }
-        else {
-        transactions = transactionRepository.findBySenderOrRecipientName(user);
+        } else {
+            transactions = transactionRepository.findBySenderOrRecipientName(user);
         }
 
         return transactions.stream()

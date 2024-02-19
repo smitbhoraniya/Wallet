@@ -1,10 +1,6 @@
 package com.swiggy.wallet.controllers;
 
-import com.swiggy.wallet.execptions.UserAlreadyExistsException;
-import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
-import com.swiggy.wallet.models.User;
-import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
 import com.swiggy.wallet.services.interfaces.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,7 @@
 package com.swiggy.wallet.models.requestModels;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

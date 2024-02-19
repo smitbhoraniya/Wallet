@@ -36,6 +36,7 @@ public class TransactionControllerTest {
     void setUp() {
         reset(transactionService);
     }
+
     @Test
     @WithMockUser(username = "sender")
     void expectTransactionSuccessful() throws Exception {

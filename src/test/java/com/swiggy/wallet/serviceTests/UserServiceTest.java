@@ -1,16 +1,12 @@
 package com.swiggy.wallet.serviceTests;
 
-import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
-import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
-import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.services.UserService;
-import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,18 +27,18 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @SpringBootTest
 public class UserServiceTest {
     @Mock
+    private Authentication authentication;
+    @Mock
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
     private SecurityContext securityContext;
-    @Mock
-    Authentication authentication;
     @InjectMocks
     private UserService userService;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         openMocks(this);
     }
 

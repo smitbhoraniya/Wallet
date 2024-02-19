@@ -9,7 +9,10 @@ import java.util.List;
 
 public interface IWalletService {
     WalletResponseModel withdraw(String username, WalletRequestModel money);
+
     WalletResponseModel deposit(String username, WalletRequestModel money);
+
     List<WalletResponseModel> fetchWallets();
+
     void transact(Wallet wallet, Wallet wallet1, Money money);
 }

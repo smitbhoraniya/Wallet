@@ -2,12 +2,9 @@ package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
-import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,7 +39,7 @@ public class WalletControllerTest {
         mockMvc.perform(put("/api/v1/wallets/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                        .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         verify(walletService, times(1)).deposit(anyString(), any(WalletRequestModel.class));
     }
@@ -57,7 +53,7 @@ public class WalletControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
-        verify(walletService, never()).deposit(anyString(),any());
+        verify(walletService, never()).deposit(anyString(), any());
     }
 
     @Test
@@ -82,7 +78,7 @@ public class WalletControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
-        verify(walletService, never()).withdraw(anyString(),any());
+        verify(walletService, never()).withdraw(anyString(), any());
     }
 
     @Test

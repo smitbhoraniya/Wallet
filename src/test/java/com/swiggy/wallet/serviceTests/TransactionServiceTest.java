@@ -29,15 +29,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @SpringBootTest
 public class TransactionServiceTest {
     @Mock
-    private SecurityContext securityContext;
-    @Mock
     Authentication authentication;
+    @Mock
+    private SecurityContext securityContext;
     @Mock
     private WalletService walletService;
     @Mock
@@ -48,7 +47,7 @@ public class TransactionServiceTest {
     private TransactionService transactionService;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         openMocks(this);
     }
 
@@ -101,7 +100,7 @@ public class TransactionServiceTest {
         when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
         when(userRepository.findByUserName("receiver")).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class,()-> transactionService.transaction(requestModel));
+        assertThrows(UserNotFoundException.class, () -> transactionService.transaction(requestModel));
         verify(walletService, times(0)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
         verify(userRepository, times(0)).save(sender);
         verify(userRepository, times(0)).save(receiver);

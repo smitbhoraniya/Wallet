@@ -17,7 +17,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -54,7 +55,7 @@ public class UsersControllerTest {
 
     @Test
     void expectUserAlreadyExists() throws Exception {
-        UserRequestModel userRequestModel = new UserRequestModel("user","password");
+        UserRequestModel userRequestModel = new UserRequestModel("user", "password");
 
         when(userService.register(userRequestModel)).thenThrow(UserAlreadyExistsException.class);
 

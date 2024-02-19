@@ -1,7 +1,10 @@
 package com.swiggy.wallet.models;
 
 import com.swiggy.wallet.enums.Currency;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
