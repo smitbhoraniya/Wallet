@@ -2,6 +2,7 @@ package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
+import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
@@ -45,7 +46,7 @@ public class UsersControllerTest {
 
         when(userService.register(userRequestModel)).thenReturn(userResponseModel);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequestModel)))
                 .andExpect(status().isCreated());
@@ -59,19 +60,30 @@ public class UsersControllerTest {
 
         when(userService.register(userRequestModel)).thenThrow(UserAlreadyExistsException.class);
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequestModel)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
         verify(userService, times(1)).register(userRequestModel);
     }
 
     @Test
     @WithMockUser(username = "user")
     void expectUserDeleted() throws Exception {
-        mockMvc.perform(delete("/api/v1/users")
+        mockMvc.perform(delete("/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).delete();
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void expectUserNotFoundInUserDeleted() throws Exception {
+        doThrow(UserNotFoundException.class).when(userService).delete();
+
+        mockMvc.perform(delete("/api/v1/user")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
         verify(userService, times(1)).delete();
     }
 }

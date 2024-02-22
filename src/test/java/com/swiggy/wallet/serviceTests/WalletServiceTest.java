@@ -46,14 +46,16 @@ public class WalletServiceTest {
 
     @Test
     void expectDepositMoney() {
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(1);
         User user = new User();
         user.setUserName("user");
-        user.setWallet(new Wallet());
+        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
-        walletService.deposit("user", requestModel);
+        walletService.deposit(1, "user", requestModel);
 
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
@@ -65,24 +67,27 @@ public class WalletServiceTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         assertThrows(AuthenticationFailedException.class, () -> {
-            walletService.deposit("nonExistentUser", requestModel);
+            walletService.deposit(1, "nonExistentUser", requestModel);
         });
     }
 
     @Test
     void expectInvalidMoneyExceptionWithNegativeAmountOnDeposit() {
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(1);
         User user = new User();
         user.setUserName("user");
-        user.setWallet(new Wallet());
+        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        assertThrows(InvalidAmountException.class, () -> walletService.deposit("user", requestModel));
+        assertThrows(InvalidAmountException.class, () -> walletService.deposit(1, "user", requestModel));
     }
 
     @Test
     void expectWithdrawMoney() {
         Wallet wallet = new Wallet();
+        wallet.setId(1);
         wallet.deposit(new Money(100, Currency.RUPEE));
         User user = new User();
         user.setUserName("user");
@@ -91,7 +96,7 @@ public class WalletServiceTest {
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
-        walletService.withdraw("user", requestModel);
+        walletService.withdraw(1, "user", requestModel);
 
 
         verify(userRepository, times(1)).findByUserName("user");
@@ -100,36 +105,42 @@ public class WalletServiceTest {
 
     @Test
     void expectInvalidMoneyExceptionWithNegativeAmountInWithdraw() {
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(1);
         User user = new User();
         user.setUserName("user");
-        user.setWallet(new Wallet());
+        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        assertThrows(InvalidAmountException.class, () -> walletService.withdraw("user", requestModel));
+        assertThrows(InvalidAmountException.class, () -> walletService.withdraw(1, "user", requestModel));
     }
 
     @Test
     void expectInsufficientMoneyExceptionWithInsufficientFundsInWithdraw() {
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(1);
         User user = new User();
         user.setUserName("user");
-        user.setWallet(new Wallet());
+        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(200.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
 
-        assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw("user", requestModel));
+        assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw(1, "user", requestModel));
     }
 
     @Test
     void expectDepositDollars() {
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(1);
         User user = new User();
         user.setUserName("user");
-        user.setWallet(new Wallet());
+        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
-        walletService.deposit("user", requestModel);
+        walletService.deposit(1, "user", requestModel);
 
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
@@ -138,6 +149,7 @@ public class WalletServiceTest {
     @Test
     void expectWithdrawDollars() {
         Wallet wallet = new Wallet();
+        wallet.setId(1);
         wallet.deposit(new Money(100, Currency.RUPEE));
         User user = new User();
         user.setUserName("user");
@@ -146,7 +158,7 @@ public class WalletServiceTest {
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
-        walletService.withdraw("user", requestModel);
+        walletService.withdraw(1, "user", requestModel);
 
 
         verify(userRepository, times(1)).findByUserName("user");

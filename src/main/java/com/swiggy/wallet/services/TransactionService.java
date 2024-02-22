@@ -1,5 +1,6 @@
 package com.swiggy.wallet.services;
 
+import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Transaction;
@@ -30,7 +31,7 @@ public class TransactionService implements ITransactionService {
     public TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User sender = userRepository.findByUserName(username)
-                .orElseThrow(() -> new UserNotFoundException("User " + username + " not found."));
+                .orElseThrow(() -> new AuthenticationFailedException("User " + username + " not found."));
         User receiver = userRepository.findByUserName(transactionRequestModel.getReceiverName())
                 .orElseThrow(() -> new UserNotFoundException("User " + transactionRequestModel.getReceiverName() + " not found."));
 
@@ -52,9 +53,9 @@ public class TransactionService implements ITransactionService {
     public List<TransactionResponseModel> fetchTransactions(LocalDateTime... dateTimes) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUserName(username)
-                .orElseThrow(() -> new UserNotFoundException("User " + username + " not found."));
+                .orElseThrow(() -> new AuthenticationFailedException("User " + username + " not found."));
 
-        List<Transaction> transactions = new ArrayList<>();
+        List<Transaction> transactions;
         if (dateTimes.length > 0 && dateTimes[0] != null && dateTimes[1] != null) {
             transactions = transactionRepository.findBySenderOrRecipientNameAndDateTimeBefore(user, dateTimes[0], dateTimes[1]);
         } else {

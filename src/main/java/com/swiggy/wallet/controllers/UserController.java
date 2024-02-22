@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/user")
 public class UserController {
     @Autowired
     private IUserService userService;
@@ -21,7 +21,8 @@ public class UserController {
     }
 
     @DeleteMapping("")
-    public void deleteUser() {
+    public ResponseEntity<Void> deleteUser() {
         userService.delete();
+        return ResponseEntity.noContent().build();
     }
 }

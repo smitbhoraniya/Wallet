@@ -36,12 +36,12 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/deposit")
+        mockMvc.perform(put("/api/v1/wallets/1/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
 
-        verify(walletService, times(1)).deposit(anyString(), any(WalletRequestModel.class));
+        verify(walletService, times(1)).deposit(anyInt(), anyString(), any(WalletRequestModel.class));
     }
 
     @Test
@@ -49,11 +49,11 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(100.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/deposit")
+        mockMvc.perform(put("/api/v1/wallets/1/deposit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
-        verify(walletService, never()).deposit(anyString(), any());
+        verify(walletService, never()).deposit(anyInt(), anyString(), any());
     }
 
     @Test
@@ -62,11 +62,11 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/withdraw")
+        mockMvc.perform(put("/api/v1/wallets/1/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk());
-        verify(walletService, times(1)).withdraw(anyString(), any(WalletRequestModel.class));
+        verify(walletService, times(1)).withdraw(anyInt(), anyString(), any(WalletRequestModel.class));
     }
 
     @Test
@@ -74,11 +74,11 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/withdraw")
+        mockMvc.perform(put("/api/v1/wallets/1/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
-        verify(walletService, never()).withdraw(anyString(), any());
+        verify(walletService, never()).withdraw(anyInt(), anyString(), any());
     }
 
     @Test

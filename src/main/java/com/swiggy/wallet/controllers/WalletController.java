@@ -17,18 +17,18 @@ public class WalletController {
     @Autowired
     private IWalletService walletService;
 
-    @PutMapping("/withdraw")
-    public ResponseEntity<WalletResponseModel> withdraw(@RequestBody WalletRequestModel money) {
+    @PutMapping("/{id}/withdraw")
+    public ResponseEntity<WalletResponseModel> withdraw(@RequestBody WalletRequestModel money, @PathVariable int id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        return ResponseEntity.ok(walletService.withdraw(username, money));
+        return ResponseEntity.ok(walletService.withdraw(id, username, money));
     }
 
-    @PutMapping("/deposit")
-    public ResponseEntity<WalletResponseModel> deposit(@RequestBody WalletRequestModel money) {
+    @PutMapping("/{id}/deposit")
+    public ResponseEntity<WalletResponseModel> deposit(@RequestBody WalletRequestModel money, @PathVariable int id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        return ResponseEntity.ok(walletService.deposit(username, money));
+        return ResponseEntity.ok(walletService.deposit(id, username, money));
     }
 
     @GetMapping("")

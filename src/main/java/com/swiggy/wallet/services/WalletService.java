@@ -1,6 +1,7 @@
 package com.swiggy.wallet.services;
 
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
+import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
@@ -22,8 +23,11 @@ public class WalletService implements IWalletService {
     private UserRepository userRepository;
 
     @Override
-    public WalletResponseModel withdraw(String username, WalletRequestModel walletRequestModel) {
+    public WalletResponseModel withdraw(int id, String username, WalletRequestModel walletRequestModel) {
         User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
+        if (id != user.getWallet().getId()) {
+            throw new WalletNotFoundException("Wallet not found.");
+        }
 
         user.getWallet().withdraw(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         userRepository.save(user);
@@ -31,8 +35,11 @@ public class WalletService implements IWalletService {
     }
 
     @Override
-    public WalletResponseModel deposit(String username, WalletRequestModel walletRequestModel) {
+    public WalletResponseModel deposit(int id, String username, WalletRequestModel walletRequestModel) {
         User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
+        if (id != user.getWallet().getId()) {
+            throw new WalletNotFoundException("Wallet not found.");
+        }
 
         user.getWallet().deposit(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         userRepository.save(user);
