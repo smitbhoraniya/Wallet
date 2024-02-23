@@ -1,7 +1,5 @@
 package com.swiggy.wallet.services.interfaces;
 
-import com.swiggy.wallet.models.Money;
-import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 

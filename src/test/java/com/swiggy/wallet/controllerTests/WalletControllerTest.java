@@ -3,7 +3,6 @@ package com.swiggy.wallet.controllerTests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.UnauthorizedWalletException;
-import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;

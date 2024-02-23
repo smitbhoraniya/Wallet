@@ -2,7 +2,6 @@ package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Money;

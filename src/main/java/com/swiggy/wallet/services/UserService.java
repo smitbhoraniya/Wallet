@@ -3,7 +3,6 @@ package com.swiggy.wallet.services;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.User;
-import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;

@@ -1,7 +1,6 @@
 package com.swiggy.wallet.services;
 
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
-import com.swiggy.wallet.execptions.UnauthorizedWalletException;
 import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;

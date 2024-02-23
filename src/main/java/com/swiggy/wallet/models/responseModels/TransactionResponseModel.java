@@ -15,4 +15,5 @@ public class TransactionResponseModel {
     private String receiverUsername;
     private Money transferredAmount;
     private LocalDateTime createdAt;
+    private Money serviceCharge;
 }

@@ -1,9 +1,8 @@
 package com.swiggy.wallet.services;
 
-import com.swiggy.wallet.execptions.AuthenticationFailedException;
-import com.swiggy.wallet.execptions.SameUserTransactionException;
-import com.swiggy.wallet.execptions.UserNotFoundException;
-import com.swiggy.wallet.execptions.WalletNotFoundException;
+import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.execptions.*;
+import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Transaction;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
@@ -18,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -52,10 +50,22 @@ public class TransactionService implements ITransactionService {
         senderWallet.withdraw(transactionRequestModel.getMoney());
         receiverWallet.deposit(transactionRequestModel.getMoney());
 
-        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney());
+        double serviceCharge = 0;
+        if (senderWallet.getMoney().getCurrency() != receiverWallet.getMoney().getCurrency()) {
+            double amountInBaseCurrency = transactionRequestModel.getMoney().getCurrency().convertToBase(transactionRequestModel.getMoney().getAmount());
+            if (amountInBaseCurrency - 10 < 0) {
+                throw new InsufficientMoneyException("Transfer money is less than service charge.");
+            }
+            double amountToTransfer = amountInBaseCurrency - 10;
+            serviceCharge = 10;
+            double amountInWalletCurrency = transactionRequestModel.getMoney().getCurrency().convertFromBase(amountToTransfer);
+            transactionRequestModel.getMoney().setAmount(amountInWalletCurrency);
+        }
+
+        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), serviceCharge);
         transactionRepository.save(transactionToSave);
 
-        return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney(), transactionToSave.getCreatedAt());
+        return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney(), transactionToSave.getCreatedAt(), new Money(serviceCharge, Currency.RUPEE));
     }
 
     @Override
@@ -77,7 +87,8 @@ public class TransactionService implements ITransactionService {
                                 transaction.getSender().getUserName(),
                                 transaction.getReceiver().getUserName(),
                                 transaction.getTransferredMoney(),
-                                transaction.getCreatedAt()
+                                transaction.getCreatedAt(),
+                                new Money(transaction.getServiceCharge(), Currency.RUPEE)
                         )
                 )
                 .toList();

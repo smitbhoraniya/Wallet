@@ -24,11 +24,21 @@ public class Transaction {
 
     private Money transferredMoney;
 
+    private double serviceCharge;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Transaction(User sender, User receiver, Money transferredMoney) {
         this.sender = sender;
         this.receiver = receiver;
         this.transferredMoney = transferredMoney;
+        this.serviceCharge = 0;
+    }
+
+    public Transaction(User sender, User receiver, Money transferredMoney, double serviceCharge) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.transferredMoney = transferredMoney;
+        this.serviceCharge = serviceCharge;
     }
 }

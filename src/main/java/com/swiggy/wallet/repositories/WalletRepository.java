@@ -11,5 +11,6 @@ import java.util.Optional;
 @Repository
 public interface WalletRepository extends JpaRepository<Wallet, Integer> {
     Optional<Wallet> findByIdAndUser(int id, User user);
+
     List<Wallet> findAllByUser(User user);
 }

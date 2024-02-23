@@ -2,7 +2,10 @@ package com.swiggy.wallet.serviceTests;
 
 import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.execptions.*;
+import com.swiggy.wallet.execptions.AuthenticationFailedException;
+import com.swiggy.wallet.execptions.InsufficientMoneyException;
+import com.swiggy.wallet.execptions.InvalidAmountException;
+import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
@@ -52,12 +55,14 @@ public class WalletServiceTest {
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
         when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
+        WalletResponseModel expected = new WalletResponseModel(1, new Money(50, Currency.RUPEE));
 
-        walletService.deposit(1, "user", requestModel);
+        WalletResponseModel response = walletService.deposit(1, "user", requestModel);
 
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        assertEquals(expected, response);
     }
 
     @Test
@@ -112,12 +117,14 @@ public class WalletServiceTest {
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
         when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet));
+        WalletResponseModel expected = new WalletResponseModel(1, new Money(50, Currency.RUPEE));
 
-        walletService.withdraw(1, "user", requestModel);
+        WalletResponseModel response = walletService.withdraw(1, "user", requestModel);
 
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        assertEquals(expected, response);
     }
 
     @Test
@@ -157,12 +164,14 @@ public class WalletServiceTest {
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
         when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
+        WalletResponseModel expected = new WalletResponseModel(1, new Money(80, Currency.RUPEE));
 
-        walletService.deposit(1, "user", requestModel);
+        WalletResponseModel response = walletService.deposit(1, "user", requestModel);
 
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        assertEquals(expected, response);
     }
 
     @Test
@@ -175,12 +184,14 @@ public class WalletServiceTest {
         WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
+        WalletResponseModel expected = new WalletResponseModel(1, new Money(20, Currency.RUPEE));
 
-        walletService.withdraw(1, "user", requestModel);
+        WalletResponseModel response = walletService.withdraw(1, "user", requestModel);
 
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        assertEquals(expected, response);
     }
 
     @Test
@@ -200,14 +211,17 @@ public class WalletServiceTest {
     @Test
     void expectWalletCreated() {
         User user = new User("user", "password", Country.INDIA);
-        Wallet wallet = new Wallet(1, new Money(), user);
+        Wallet wallet = new Wallet(user);
+        wallet.setId(1);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(walletRepository.save(any())).thenReturn(wallet);
+        WalletResponseModel expected = new WalletResponseModel(1, new Money(0, Currency.RUPEE));
 
-        walletService.create("user");
+        WalletResponseModel response = walletService.create("user");
 
         verify(userRepository, times(1)).findByUserName("user");
         verify(walletRepository, times(1)).save(any());
+        assertEquals(expected, response);
     }
 
     @Test

@@ -61,4 +61,12 @@ public class WalletTest {
 
         assertEquals(wallet1.getMoney().getCurrency(), Currency.DOLLAR);
     }
+
+    @Test
+    void expectCurrencyBasedOnUser() {
+        User user = new User("user", "password", Country.AMERICA);
+        Wallet wallet = new Wallet(user);
+
+        assertEquals(Currency.DOLLAR, wallet.getMoney().getCurrency());
+    }
 }
