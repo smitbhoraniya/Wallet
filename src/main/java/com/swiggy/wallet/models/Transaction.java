@@ -24,7 +24,11 @@ public class Transaction {
 
     private Money transferredMoney;
 
-    private double serviceCharge;
+    @AttributeOverrides({
+            @AttributeOverride(name = "amount", column = @Column(name = "service_charge_amount")),
+            @AttributeOverride(name = "currency", column = @Column(name = "service_charge_currency"))
+    })
+    private Money serviceCharge;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -32,10 +36,10 @@ public class Transaction {
         this.sender = sender;
         this.receiver = receiver;
         this.transferredMoney = transferredMoney;
-        this.serviceCharge = 0;
+        this.serviceCharge = new Money(0, transferredMoney.getCurrency());
     }
 
-    public Transaction(User sender, User receiver, Money transferredMoney, double serviceCharge) {
+    public Transaction(User sender, User receiver, Money transferredMoney, Money serviceCharge) {
         this.sender = sender;
         this.receiver = receiver;
         this.transferredMoney = transferredMoney;

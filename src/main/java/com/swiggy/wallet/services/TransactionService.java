@@ -62,7 +62,7 @@ public class TransactionService implements ITransactionService {
             transactionRequestModel.getMoney().setAmount(amountInWalletCurrency);
         }
 
-        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), serviceCharge);
+        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), new Money(serviceCharge, Currency.RUPEE));
         transactionRepository.save(transactionToSave);
 
         return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney(), transactionToSave.getCreatedAt(), new Money(serviceCharge, Currency.RUPEE));
@@ -88,7 +88,7 @@ public class TransactionService implements ITransactionService {
                                 transaction.getReceiver().getUserName(),
                                 transaction.getTransferredMoney(),
                                 transaction.getCreatedAt(),
-                                new Money(transaction.getServiceCharge(), Currency.RUPEE)
+                                transaction.getServiceCharge()
                         )
                 )
                 .toList();
