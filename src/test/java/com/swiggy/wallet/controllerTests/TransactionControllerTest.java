@@ -43,7 +43,7 @@ public class TransactionControllerTest {
     @Test
     @WithMockUser(username = "sender")
     void expectTransactionSuccessful() throws Exception {
-        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", new Money(100, Currency.RUPEE));
+        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", 1, 2, new Money(100, Currency.RUPEE));
         String requestJson = objectMapper.writeValueAsString(transactionRequestModel);
 
         mockMvc.perform(put("/api/v1/transactions")
@@ -55,8 +55,8 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "sender")
-    void expectReceiverTransactionSuccessful() throws Exception {
-        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", new Money(100, Currency.RUPEE));
+    void expectReceiverNotFoundInTransaction() throws Exception {
+        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", 1, 2, new Money(100, Currency.RUPEE));
         String requestJson = objectMapper.writeValueAsString(transactionRequestModel);
 
         when(transactionService.transaction(transactionRequestModel)).thenThrow(UserNotFoundException.class);
@@ -71,7 +71,7 @@ public class TransactionControllerTest {
     @Test
     @WithMockUser(username = "sender")
     void expectSameUserCanNotDoTransaction() throws Exception {
-        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", new Money(100, Currency.RUPEE));
+        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", 1, 2, new Money(100, Currency.RUPEE));
         String requestJson = objectMapper.writeValueAsString(transactionRequestModel);
 
         when(transactionService.transaction(transactionRequestModel)).thenThrow(SameUserTransactionException.class);

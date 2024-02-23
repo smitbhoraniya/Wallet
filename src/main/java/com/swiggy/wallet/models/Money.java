@@ -29,7 +29,7 @@ public class Money {
     }
 
     public void subtract(Money money) {
-        double amountInBaseCurrency = money.getCurrency().convertToBase(money.amount);
+        double amountInBaseCurrency = this.currency.convertFromBase(money.getCurrency().convertToBase(money.amount));
         if (this.amount < amountInBaseCurrency) {
             throw new InsufficientMoneyException("Don't have enough money.");
         }
@@ -37,7 +37,7 @@ public class Money {
     }
 
     public void add(Money money) {
-        double amountInBaseCurrency = money.getCurrency().convertToBase(money.amount);
+        double amountInBaseCurrency = this.currency.convertFromBase(money.getCurrency().convertToBase(money.amount));
         this.amount = this.amount + amountInBaseCurrency;
     }
 }

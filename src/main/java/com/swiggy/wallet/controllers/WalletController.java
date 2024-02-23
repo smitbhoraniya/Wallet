@@ -4,6 +4,7 @@ import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.services.interfaces.IWalletService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,15 @@ public class WalletController {
 
     @GetMapping("")
     public ResponseEntity<List<WalletResponseModel>> fetchWallets() {
-        return ResponseEntity.ok(walletService.fetchWallets());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        return ResponseEntity.ok(walletService.fetchWallets(username));
+    }
+
+    @PostMapping("")
+    public ResponseEntity<WalletResponseModel> create() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        return new ResponseEntity<>(walletService.create(username), HttpStatus.CREATED);
     }
 }

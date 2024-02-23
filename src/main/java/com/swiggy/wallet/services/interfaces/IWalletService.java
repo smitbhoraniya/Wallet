@@ -12,7 +12,7 @@ public interface IWalletService {
 
     WalletResponseModel deposit(int id, String username, WalletRequestModel money);
 
-    List<WalletResponseModel> fetchWallets();
+    List<WalletResponseModel> fetchWallets(String username);
 
-    void transact(Wallet wallet, Wallet wallet1, Money money);
+    WalletResponseModel create(String username);
 }

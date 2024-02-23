@@ -1,11 +1,14 @@
 package com.swiggy.wallet.controllerTests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
+import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
+import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,8 +44,11 @@ public class UsersControllerTest {
 
     @Test
     void expectUserCreated() throws Exception {
-        UserRequestModel userRequestModel = new UserRequestModel("user", "password");
-        UserResponseModel userResponseModel = new UserResponseModel("user", new Wallet());
+        UserRequestModel userRequestModel = new UserRequestModel("user", "password", Country.INDIA);
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet = new Wallet(user);
+        wallet.setId(1);
+        UserResponseModel userResponseModel = new UserResponseModel("user", new WalletResponseModel(wallet.getId(), wallet.getMoney()));
 
         when(userService.register(userRequestModel)).thenReturn(userResponseModel);
 
@@ -56,7 +62,7 @@ public class UsersControllerTest {
 
     @Test
     void expectUserAlreadyExists() throws Exception {
-        UserRequestModel userRequestModel = new UserRequestModel("user", "password");
+        UserRequestModel userRequestModel = new UserRequestModel("user", "password", Country.INDIA);
 
         when(userService.register(userRequestModel)).thenThrow(UserAlreadyExistsException.class);
 

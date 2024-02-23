@@ -1,6 +1,7 @@
 package com.swiggy.wallet.services;
 
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
+import com.swiggy.wallet.execptions.UnauthorizedWalletException;
 import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
@@ -25,35 +26,35 @@ public class WalletService implements IWalletService {
     @Override
     public WalletResponseModel withdraw(int id, String username, WalletRequestModel walletRequestModel) {
         User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
-        if (id != user.getWallet().getId()) {
-            throw new WalletNotFoundException("Wallet not found.");
-        }
+        Wallet wallet = walletRepository.findByIdAndUser(id, user).orElseThrow(() -> new WalletNotFoundException("Wallet not found."));
 
-        user.getWallet().withdraw(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
+        wallet.withdraw(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         userRepository.save(user);
-        return new WalletResponseModel(user.getWallet().getMoney());
+        return new WalletResponseModel(wallet.getId(), wallet.getMoney());
     }
 
     @Override
     public WalletResponseModel deposit(int id, String username, WalletRequestModel walletRequestModel) {
         User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
-        if (id != user.getWallet().getId()) {
-            throw new WalletNotFoundException("Wallet not found.");
-        }
+        Wallet wallet = walletRepository.findByIdAndUser(id, user).orElseThrow(() -> new WalletNotFoundException("Wallet not found."));
 
-        user.getWallet().deposit(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
+        wallet.deposit(new Money(walletRequestModel.getAmount(), walletRequestModel.getCurrency()));
         userRepository.save(user);
-        return new WalletResponseModel(user.getWallet().getMoney());
+        return new WalletResponseModel(wallet.getId(), wallet.getMoney());
     }
 
     @Override
-    public List<WalletResponseModel> fetchWallets() {
-        return walletRepository.findAll().stream().map(wallet -> new WalletResponseModel(wallet.getMoney())).toList();
+    public List<WalletResponseModel> fetchWallets(String username) {
+        User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
+        return walletRepository.findAllByUser(user).stream().map(wallet -> new WalletResponseModel(wallet.getId(), wallet.getMoney())).toList();
     }
 
     @Override
-    public void transact(Wallet senderWallet, Wallet receiverWallet, Money money) {
-        senderWallet.withdraw(money);
-        receiverWallet.deposit(money);
+    public WalletResponseModel create(String username) {
+        User user = userRepository.findByUserName(username).orElseThrow(() -> new AuthenticationFailedException("Username or password does not match."));
+        Wallet wallet = new Wallet(user);
+
+        Wallet response = walletRepository.save(wallet);
+        return new WalletResponseModel(response.getId(), response.getMoney());
     }
 }

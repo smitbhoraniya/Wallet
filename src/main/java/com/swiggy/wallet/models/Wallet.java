@@ -1,15 +1,13 @@
 package com.swiggy.wallet.models;
 
-import com.swiggy.wallet.enums.Currency;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Wallet {
     @Id
@@ -18,8 +16,12 @@ public class Wallet {
 
     private Money money;
 
-    public Wallet() {
-        this.money = new Money(0.0, Currency.RUPEE);
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User user;
+
+    public Wallet(User user) {
+        this.money = new Money(0.0, user.getCountry().getCurrency());
+        this.user = user;
     }
 
     public void withdraw(Money money) {

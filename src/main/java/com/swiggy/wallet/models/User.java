@@ -1,6 +1,7 @@
 package com.swiggy.wallet.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.swiggy.wallet.enums.Country;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,14 +25,14 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Wallet wallet;
+    @Enumerated(EnumType.STRING)
+    private Country country;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public User(String userName, String password) {
+    public User(String userName, String password, Country country) {
         this.userName = userName;
         this.password = password;
-        this.wallet = new Wallet();
+        this.country = country;
     }
 }

@@ -3,12 +3,15 @@ package com.swiggy.wallet.services;
 import com.swiggy.wallet.execptions.AuthenticationFailedException;
 import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
+import com.swiggy.wallet.execptions.WalletNotFoundException;
 import com.swiggy.wallet.models.Transaction;
 import com.swiggy.wallet.models.User;
+import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.repositories.TransactionRepository;
 import com.swiggy.wallet.repositories.UserRepository;
+import com.swiggy.wallet.repositories.WalletRepository;
 import com.swiggy.wallet.services.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +29,8 @@ public class TransactionService implements ITransactionService {
     private TransactionRepository transactionRepository;
     @Autowired
     private WalletService walletService;
+    @Autowired
+    private WalletRepository walletRepository;
 
     @Override
     public TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel) {
@@ -35,14 +40,18 @@ public class TransactionService implements ITransactionService {
         User receiver = userRepository.findByUserName(transactionRequestModel.getReceiverName())
                 .orElseThrow(() -> new UserNotFoundException("User " + transactionRequestModel.getReceiverName() + " not found."));
 
-        if (sender.getUserId() == receiver.getUserId()) {
+        if (transactionRequestModel.getSenderWalletId() == transactionRequestModel.getReceiverWalletId()) {
             throw new SameUserTransactionException("Couldn't do transaction in same account.");
         }
 
-        walletService.transact(sender.getWallet(), receiver.getWallet(), transactionRequestModel.getMoney());
+        Wallet senderWallet = walletRepository.findByIdAndUser(transactionRequestModel.getSenderWalletId(), sender)
+                .orElseThrow(() -> new WalletNotFoundException("Sender wallet not found."));
+        Wallet receiverWallet = walletRepository.findByIdAndUser(transactionRequestModel.getReceiverWalletId(), receiver)
+                .orElseThrow(() -> new WalletNotFoundException("Receiver wallet not found."));
 
-        userRepository.save(sender);
-        userRepository.save(receiver);
+        senderWallet.withdraw(transactionRequestModel.getMoney());
+        receiverWallet.deposit(transactionRequestModel.getMoney());
+
         Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney());
         transactionRepository.save(transactionToSave);
 

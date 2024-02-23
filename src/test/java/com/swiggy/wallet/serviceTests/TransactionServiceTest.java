@@ -1,15 +1,18 @@
 package com.swiggy.wallet.serviceTests;
 
+import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.Transaction;
 import com.swiggy.wallet.models.User;
+import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.repositories.TransactionRepository;
 import com.swiggy.wallet.repositories.UserRepository;
+import com.swiggy.wallet.repositories.WalletRepository;
 import com.swiggy.wallet.services.TransactionService;
 import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +43,8 @@ public class TransactionServiceTest {
     @Mock
     private WalletService walletService;
     @Mock
+    private WalletRepository walletRepository;
+    @Mock
     private UserRepository userRepository;
     @Mock
     private TransactionRepository transactionRepository;
@@ -53,47 +58,52 @@ public class TransactionServiceTest {
 
     @Test
     void expectTransactionSuccessful() {
-        User sender = new User("sender", "senderPassword");
+        User sender = new User("sender", "senderPassword", Country.INDIA);
         sender.setUserId(1);
-        User receiver = new User("receiver", "receiverPassword");
+        Wallet senderWallet = spy(new Wallet(sender));
+        senderWallet.setId(1);
+        senderWallet.deposit(new Money(100, Currency.RUPEE));
+        User receiver = new User("receiver", "receiverPassword", Country.INDIA);
         receiver.setUserId(2);
-        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", new Money(100.0, Currency.RUPEE));
+        Wallet receiverWallet = spy(new Wallet(receiver));
+        receiverWallet.setId(2);
+        Money money = new Money(100.0, Currency.RUPEE);
+        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", 1, 2, money);
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
         when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
         when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
+        when(walletRepository.findByIdAndUser(1, sender)).thenReturn(Optional.of(senderWallet));
+        when(walletRepository.findByIdAndUser(2, receiver)).thenReturn(Optional.of(receiverWallet));
 
         transactionService.transaction(requestModel);
 
-        verify(walletService, times(1)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
-        verify(userRepository, times(1)).save(sender);
-        verify(userRepository, times(1)).save(receiver);
+        verify(senderWallet, times(1)).withdraw(money);
+        verify(receiverWallet, times(1)).deposit(money);
+        verify(userRepository, times(2)).findByUserName(anyString());
+        verify(walletRepository, times(2)).findByIdAndUser(anyInt(), any());
     }
 
     @Test
     void expectSameAccountExceptionInSameAccountTransaction() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
-        TransactionRequestModel requestModel = new TransactionRequestModel("sender", new Money(100.0, Currency.RUPEE));
+        User sender = new User("sender", "senderPassword", Country.INDIA);
+        Wallet senderWallet = new Wallet(sender);
+        senderWallet.setId(1);
+        TransactionRequestModel requestModel = new TransactionRequestModel("sender", 1, 1, new Money(100.0, Currency.RUPEE));
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
         when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
-        when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
 
         assertThrows(SameUserTransactionException.class, () -> transactionService.transaction(requestModel));
-
-        verify(walletService, times(0)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
         verify(userRepository, times(0)).save(sender);
-        verify(userRepository, times(0)).save(receiver);
     }
 
     @Test
     void expectReceiverNotFoundOnTransaction() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
-        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", new Money(100.0, Currency.RUPEE));
+        User sender = new User("sender", "senderPassword", Country.INDIA);
+        TransactionRequestModel requestModel = new TransactionRequestModel("receiver", 1, 2, new Money(100.0, Currency.RUPEE));
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -101,15 +111,13 @@ public class TransactionServiceTest {
         when(userRepository.findByUserName("receiver")).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> transactionService.transaction(requestModel));
-        verify(walletService, times(0)).transact(sender.getWallet(), receiver.getWallet(), requestModel.getMoney());
-        verify(userRepository, times(0)).save(sender);
-        verify(userRepository, times(0)).save(receiver);
+        verify(userRepository, times(2)).findByUserName(anyString());
     }
 
     @Test
     void expectFetchAllTransaction() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
+        User sender = new User("sender", "senderPassword", Country.INDIA);
+        User receiver = new User("receiver", "receiverPassword", Country.INDIA);
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -126,28 +134,29 @@ public class TransactionServiceTest {
 
         assertEquals(2, transactionResponseModelList.size());
         verify(transactionRepository, times(1)).findBySenderOrRecipientName(sender);
+        verify(userRepository, times(1)).findByUserName("sender");
+        verify(transactionRepository, times(1)).findBySenderOrRecipientName(any());
     }
 
     @Test
     void expectEmptyListInAllTransaction() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
+        User sender = new User("sender", "senderPassword", Country.INDIA);
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
         when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
-        when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
 
         List<TransactionResponseModel> transactionResponseModelList = transactionService.fetchTransactions();
 
         assertEquals(0, transactionResponseModelList.size());
         verify(transactionRepository, times(1)).findBySenderOrRecipientName(sender);
+        verify(userRepository, times(1)).findByUserName(anyString());
     }
 
     @Test
-    void expectListOfTransactionBeforeDateTime() {
-        User sender = new User("sender", "senderPassword");
-        User receiver = new User("receiver", "receiverPassword");
+    void expectListOfTransactionBetweenDateTime() {
+        User sender = new User("sender", "senderPassword", Country.INDIA);
+        User receiver = new User("receiver", "receiverPassword", Country.INDIA);
         when(authentication.getName()).thenReturn("sender");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -163,5 +172,32 @@ public class TransactionServiceTest {
 
         assertEquals(0, transactionResponseModelList.size());
         verify(transactionRepository, times(1)).findBySenderOrRecipientNameAndDateTimeBefore(sender, fromDateTime, toDateTime);
+        verify(userRepository, times(1)).findByUserName(anyString());
+    }
+
+    @Test
+    void expectTransactionInDifferentWalletOfSameUser() {
+        User sender = new User("sender", "senderPassword", Country.INDIA);
+        sender.setUserId(1);
+        Wallet senderWallet = spy(new Wallet(sender));
+        senderWallet.deposit(new Money(150.0, Currency.RUPEE));
+        senderWallet.setId(1);
+        Wallet otherSenderWallet = spy(new Wallet(sender));
+        senderWallet.setId(2);
+        Money money = new Money(100.0, Currency.RUPEE);
+        TransactionRequestModel requestModel = new TransactionRequestModel("sender", 1, 2, money);
+        when(authentication.getName()).thenReturn("sender");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
+        when(walletRepository.findByIdAndUser(1, sender)).thenReturn(Optional.of(senderWallet));
+        when(walletRepository.findByIdAndUser(2, sender)).thenReturn(Optional.of(otherSenderWallet));
+
+        transactionService.transaction(requestModel);
+
+        verify(senderWallet, times(1)).withdraw(money);
+        verify(otherSenderWallet, times(1)).deposit(money);
+        verify(userRepository, times(2)).findByUserName(anyString());
+        verify(walletRepository, times(2)).findByIdAndUser(anyInt(), any());
     }
 }

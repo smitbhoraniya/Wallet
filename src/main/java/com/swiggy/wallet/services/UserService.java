@@ -3,8 +3,10 @@ package com.swiggy.wallet.services;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.User;
+import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
+import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.services.interfaces.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +21,20 @@ public class UserService implements IUserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private WalletService walletService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseModel register(UserRequestModel user) {
         if (userRepository.findByUserName(user.getUsername()).isPresent())
             throw new UserAlreadyExistsException("Username taken. Please try with another username.");
-        User userToSave = new User(user.getUsername(), passwordEncoder.encode(user.getPassword()));
+        User userToSave = new User(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getCountry());
         User createdUser = userRepository.save(userToSave);
-        return new UserResponseModel(createdUser.getUserName(), createdUser.getWallet());
+
+        WalletResponseModel wallet = walletService.create(createdUser.getUserName());
+
+        return new UserResponseModel(createdUser.getUserName(), wallet);
     }
 
     @Override

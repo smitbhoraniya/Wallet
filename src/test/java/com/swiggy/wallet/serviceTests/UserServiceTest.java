@@ -1,12 +1,17 @@
 package com.swiggy.wallet.serviceTests;
 
+import com.swiggy.wallet.enums.Country;
+import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.UserAlreadyExistsException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
+import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.requestModels.UserRequestModel;
 import com.swiggy.wallet.models.responseModels.UserResponseModel;
+import com.swiggy.wallet.models.responseModels.WalletResponseModel;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.services.UserService;
+import com.swiggy.wallet.services.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -31,6 +36,8 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private WalletService walletService;
+    @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
     private SecurityContext securityContext;
@@ -46,8 +53,9 @@ public class UserServiceTest {
     void expectUserCreated() throws UserAlreadyExistsException {
         when(userRepository.findByUserName("user")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-        when(userRepository.save(any())).thenReturn(new User("user", "encodedPassword"));
-        UserRequestModel userRequestModel = new UserRequestModel("user", "password");
+        when(userRepository.save(any())).thenReturn(new User("user", "encodedPassword", Country.INDIA));
+        when(walletService.create("user")).thenReturn(new WalletResponseModel(1, new Money(0, Currency.RUPEE)));
+        UserRequestModel userRequestModel = new UserRequestModel("user", "password", Country.INDIA);
 
         UserResponseModel savedUser = userService.register(userRequestModel);
 
@@ -56,12 +64,13 @@ public class UserServiceTest {
         verify(userRepository, times(1)).findByUserName("user");
         verify(passwordEncoder, times(1)).encode("password");
         verify(userRepository, times(1)).save(any());
+        verify(walletService, times(1)).create(any());
     }
 
     @Test
     void expectUserAlreadyExistsException() {
         when(userRepository.findByUserName("existingUser")).thenReturn(Optional.of(new User()));
-        UserRequestModel userRequestModel = new UserRequestModel("existingUser", "password");
+        UserRequestModel userRequestModel = new UserRequestModel("existingUser", "password", Country.INDIA);
 
         assertThrows(UserAlreadyExistsException.class, () -> {
             userService.register(userRequestModel);
@@ -73,7 +82,7 @@ public class UserServiceTest {
     @Test
     void expectUserDeleted() {
         String username = "user";
-        User user = new User(username, "password");
+        User user = new User(username, "password", Country.INDIA);
         when(userRepository.findByUserName(username)).thenReturn(Optional.of(user));
         when(authentication.getName()).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(authentication);

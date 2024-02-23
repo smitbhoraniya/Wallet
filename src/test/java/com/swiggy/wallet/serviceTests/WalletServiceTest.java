@@ -1,9 +1,8 @@
 package com.swiggy.wallet.serviceTests;
 
+import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.enums.Currency;
-import com.swiggy.wallet.execptions.AuthenticationFailedException;
-import com.swiggy.wallet.execptions.InsufficientMoneyException;
-import com.swiggy.wallet.execptions.InvalidAmountException;
+import com.swiggy.wallet.execptions.*;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
@@ -46,17 +45,17 @@ public class WalletServiceTest {
 
     @Test
     void expectDepositMoney() {
-        Wallet wallet1 = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
         wallet1.setId(1);
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
 
         walletService.deposit(1, "user", requestModel);
 
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
     }
@@ -69,122 +68,153 @@ public class WalletServiceTest {
         assertThrows(AuthenticationFailedException.class, () -> {
             walletService.deposit(1, "nonExistentUser", requestModel);
         });
+        verify(userRepository, times(1)).findByUserName(anyString());
     }
 
     @Test
     void expectInvalidMoneyExceptionWithNegativeAmountOnDeposit() {
-        Wallet wallet1 = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
         wallet1.setId(1);
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
 
         assertThrows(InvalidAmountException.class, () -> walletService.deposit(1, "user", requestModel));
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
+        verify(userRepository, times(1)).findByUserName("user");
+    }
+
+    @Test
+    void expectWalletNotMatch() {
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
+        wallet1.setId(1);
+        wallet1.setId(2);
+        WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenReturn(user);
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.empty());
+
+        assertThrows(WalletNotFoundException.class, () -> walletService.deposit(1, "user", requestModel));
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(userRepository, never()).save(any());
     }
 
     @Test
     void expectWithdrawMoney() {
-        Wallet wallet = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet = new Wallet(user);
         wallet.setId(1);
         wallet.deposit(new Money(100, Currency.RUPEE));
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet);
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet));
 
         walletService.withdraw(1, "user", requestModel);
 
-
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
     }
 
     @Test
     void expectInvalidMoneyExceptionWithNegativeAmountInWithdraw() {
-        Wallet wallet1 = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
         wallet1.setId(1);
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(-50.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet));
 
         assertThrows(InvalidAmountException.class, () -> walletService.withdraw(1, "user", requestModel));
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
+        verify(userRepository, times(1)).findByUserName(anyString());
     }
 
     @Test
     void expectInsufficientMoneyExceptionWithInsufficientFundsInWithdraw() {
-        Wallet wallet1 = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
         wallet1.setId(1);
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(200.0, Currency.RUPEE);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
 
         assertThrows(InsufficientMoneyException.class, () -> walletService.withdraw(1, "user", requestModel));
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
+        verify(userRepository, times(1)).findByUserName(anyString());
     }
 
     @Test
     void expectDepositDollars() {
-        Wallet wallet1 = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(user);
         wallet1.setId(1);
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet1);
         WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet1));
 
         walletService.deposit(1, "user", requestModel);
 
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
     }
 
     @Test
     void expectWithdrawDollars() {
-        Wallet wallet = new Wallet();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet = new Wallet(user);
         wallet.setId(1);
+        when(walletRepository.findByIdAndUser(1, user)).thenReturn(Optional.of(wallet));
         wallet.deposit(new Money(100, Currency.RUPEE));
-        User user = new User();
-        user.setUserName("user");
-        user.setWallet(wallet);
         WalletRequestModel requestModel = new WalletRequestModel(1.0, Currency.DOLLAR);
         when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
         when(userRepository.save(any())).thenReturn(user);
 
         walletService.withdraw(1, "user", requestModel);
 
-
+        verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
     }
 
     @Test
     void expectGetAllWallets() {
-        Wallet wallet1 = new Wallet(1, new Money());
-        Wallet wallet2 = new Wallet(2, new Money());
-        when(walletRepository.findAll()).thenReturn(Arrays.asList(wallet1, wallet2));
-        List<WalletResponseModel> wallets = walletService.fetchWallets();
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet1 = new Wallet(1, new Money(), user);
+        Wallet wallet2 = new Wallet(2, new Money(), user);
+        when(walletRepository.findAllByUser(user)).thenReturn(Arrays.asList(wallet1, wallet2));
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        List<WalletResponseModel> wallets = walletService.fetchWallets("user");
 
         assertEquals(2L, wallets.size());
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(walletRepository, times(1)).findAllByUser(any());
     }
 
     @Test
-    void expectTransactionSuccessful() {
-        Money moneyForTransaction = new Money(100, Currency.RUPEE);
-        Wallet sendersWallet = wallet;
-        sendersWallet.deposit(new Money(1000, Currency.RUPEE));
-        Wallet receiversWallet = wallet;
+    void expectWalletCreated() {
+        User user = new User("user", "password", Country.INDIA);
+        Wallet wallet = new Wallet(1, new Money(), user);
+        when(userRepository.findByUserName("user")).thenReturn(Optional.of(user));
+        when(walletRepository.save(any())).thenReturn(wallet);
 
-        walletService.transact(sendersWallet, receiversWallet, moneyForTransaction);
+        walletService.create("user");
 
-        verify(sendersWallet, times(1)).withdraw(moneyForTransaction);
-        verify(receiversWallet, times(1)).deposit(moneyForTransaction);
+        verify(userRepository, times(1)).findByUserName("user");
+        verify(walletRepository, times(1)).save(any());
+    }
+
+    @Test
+    void expectAuthenticationFailInWalletCreated() {
+        when(userRepository.findByUserName("notExist")).thenReturn(Optional.empty());
+
+        assertThrows(AuthenticationFailedException.class, () -> walletService.create("user"));
+        verify(userRepository, times(1)).findByUserName("user");
     }
 }
