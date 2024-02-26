@@ -1,5 +1,6 @@
 package com.swiggy.wallet.models;
 
+import com.swiggy.wallet.clients.CurrencyConvertClient;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidAmountException;
@@ -29,7 +30,7 @@ public class Money {
     }
 
     public void subtract(Money money) {
-        double amountInBaseCurrency = this.currency.convertFromBase(money.getCurrency().convertToBase(money.amount));
+        double amountInBaseCurrency = CurrencyConvertClient.convert(money, this.currency);
         if (this.amount < amountInBaseCurrency) {
             throw new InsufficientMoneyException("Don't have enough money.");
         }
@@ -37,7 +38,7 @@ public class Money {
     }
 
     public void add(Money money) {
-        double amountInBaseCurrency = this.currency.convertFromBase(money.getCurrency().convertToBase(money.amount));
+        double amountInBaseCurrency = CurrencyConvertClient.convert(money, this.currency);
         this.amount = this.amount + amountInBaseCurrency;
     }
 }

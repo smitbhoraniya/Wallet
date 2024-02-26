@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package proto;
+
+option java_multiple_files = true;
+
+service CurrencyConvertService {
+  rpc Convert (CurrencyConvertRequest) returns (CurrencyConvertResponse);
+}
+
+message CurrencyConvertRequest {
+  float amount = 1;
+  string fromCurrency = 2;
+  string toCurrency = 3;
+}
+
+message CurrencyConvertResponse {
+  float amount = 1;
+}
