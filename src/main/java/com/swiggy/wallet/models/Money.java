@@ -30,7 +30,8 @@ public class Money {
     }
 
     public void subtract(Money money) {
-        double amountInBaseCurrency = CurrencyConvertClient.convert(money, this.currency);
+        CurrencyConvertClient client = new CurrencyConvertClient();
+        double amountInBaseCurrency = client.convert(money, this.currency);
         if (this.amount < amountInBaseCurrency) {
             throw new InsufficientMoneyException("Don't have enough money.");
         }
@@ -38,7 +39,8 @@ public class Money {
     }
 
     public void add(Money money) {
-        double amountInBaseCurrency = CurrencyConvertClient.convert(money, this.currency);
+        CurrencyConvertClient client = new CurrencyConvertClient();
+        double amountInBaseCurrency = client.convert(money, this.currency);
         this.amount = this.amount + amountInBaseCurrency;
     }
 }

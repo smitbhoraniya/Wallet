@@ -11,6 +11,7 @@ import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
+import com.swiggy.wallet.repositories.IntraWalletTransactionRepository;
 import com.swiggy.wallet.repositories.TransactionRepository;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.repositories.WalletRepository;
@@ -49,6 +50,8 @@ public class TransactionServiceTest {
     private UserRepository userRepository;
     @Mock
     private TransactionRepository transactionRepository;
+    @Mock
+    private IntraWalletTransactionRepository intraWalletTransactionRepository;
     @InjectMocks
     private TransactionService transactionService;
 
@@ -91,6 +94,7 @@ public class TransactionServiceTest {
         verify(receiverWallet, times(1)).deposit(money);
         verify(userRepository, times(2)).findByUserName(anyString());
         verify(walletRepository, times(2)).findByIdAndUser(anyInt(), any());
+        verify(intraWalletTransactionRepository, times(2)).save(any());
         assertEquals(expected, response);
     }
 

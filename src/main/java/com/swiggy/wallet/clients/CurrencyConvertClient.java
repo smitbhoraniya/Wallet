@@ -7,9 +7,8 @@ import io.grpc.ManagedChannelBuilder;
 import org.springframework.stereotype.Service;
 import proto.*;
 
-@Service
 public class CurrencyConvertClient {
-    public static double convert(Money money, Currency currency) {
+    public double convert(Money money, Currency currency) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext()
                 .build();

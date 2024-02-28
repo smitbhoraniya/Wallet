@@ -11,6 +11,7 @@ import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
 import com.swiggy.wallet.models.requestModels.WalletRequestModel;
 import com.swiggy.wallet.models.responseModels.WalletResponseModel;
+import com.swiggy.wallet.repositories.IntraWalletTransactionRepository;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.repositories.WalletRepository;
 import com.swiggy.wallet.services.WalletService;
@@ -40,6 +41,8 @@ public class WalletServiceTest {
     private UserRepository userRepository;
     @Mock
     private Wallet wallet;
+    @Mock
+    private IntraWalletTransactionRepository intraWalletTransactionRepository;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +65,7 @@ public class WalletServiceTest {
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        verify(intraWalletTransactionRepository, times(1)).save(any());
         assertEquals(expected, response);
     }
 
@@ -124,6 +128,7 @@ public class WalletServiceTest {
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        verify(intraWalletTransactionRepository, times(1)).save(any());
         assertEquals(expected, response);
     }
 
@@ -171,6 +176,7 @@ public class WalletServiceTest {
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        verify(intraWalletTransactionRepository, times(1)).save(any());
         assertEquals(expected, response);
     }
 
@@ -191,6 +197,7 @@ public class WalletServiceTest {
         verify(walletRepository, times(1)).findByIdAndUser(1, user);
         verify(userRepository, times(1)).findByUserName("user");
         verify(userRepository, times(1)).save(any());
+        verify(intraWalletTransactionRepository, times(1)).save(any());
         assertEquals(expected, response);
     }
 

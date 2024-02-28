@@ -1,13 +1,12 @@
 package com.swiggy.wallet.services;
 
 import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.enums.IntraWalletTransactionType;
 import com.swiggy.wallet.execptions.*;
-import com.swiggy.wallet.models.Money;
-import com.swiggy.wallet.models.Transaction;
-import com.swiggy.wallet.models.User;
-import com.swiggy.wallet.models.Wallet;
+import com.swiggy.wallet.models.*;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
+import com.swiggy.wallet.repositories.IntraWalletTransactionRepository;
 import com.swiggy.wallet.repositories.TransactionRepository;
 import com.swiggy.wallet.repositories.UserRepository;
 import com.swiggy.wallet.repositories.WalletRepository;
@@ -29,7 +28,8 @@ public class TransactionService implements ITransactionService {
     private WalletService walletService;
     @Autowired
     private WalletRepository walletRepository;
-
+    @Autowired
+    private IntraWalletTransactionRepository intraWalletTransactionRepository;
     @Override
     public TransactionResponseModel transaction(TransactionRequestModel transactionRequestModel) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -50,6 +50,11 @@ public class TransactionService implements ITransactionService {
         senderWallet.withdraw(transactionRequestModel.getMoney());
         receiverWallet.deposit(transactionRequestModel.getMoney());
 
+        IntraWalletTransaction withdraw = intraWalletTransactionRepository.save(
+                new IntraWalletTransaction(transactionRequestModel.getMoney(), IntraWalletTransactionType.WITHDRAW, senderWallet));
+        IntraWalletTransaction deposit = intraWalletTransactionRepository.save(
+                new IntraWalletTransaction(transactionRequestModel.getMoney(), IntraWalletTransactionType.DEPOSIT, receiverWallet));
+
         double serviceCharge = 0;
         if (senderWallet.getMoney().getCurrency() != receiverWallet.getMoney().getCurrency()) {
             double amountInBaseCurrency = transactionRequestModel.getMoney().getCurrency().convertToBase(transactionRequestModel.getMoney().getAmount());
@@ -62,7 +67,7 @@ public class TransactionService implements ITransactionService {
             transactionRequestModel.getMoney().setAmount(amountInWalletCurrency);
         }
 
-        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), new Money(serviceCharge, Currency.RUPEE));
+        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), new Money(serviceCharge, Currency.RUPEE), deposit, withdraw);
         transactionRepository.save(transactionToSave);
 
         return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney(), transactionToSave.getCreatedAt(), new Money(serviceCharge, Currency.RUPEE));

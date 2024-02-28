@@ -1,8 +1,11 @@
 package com.swiggy.wallet.enums;
 
+import lombok.Getter;
+
 import static com.swiggy.wallet.enums.Currency.DOLLAR;
 import static com.swiggy.wallet.enums.Currency.RUPEE;
 
+@Getter
 public enum Country {
     INDIA(RUPEE),
     AMERICA(DOLLAR);
@@ -12,7 +15,4 @@ public enum Country {
         this.currency = currency;
     }
 
-    public Currency getCurrency() {
-        return this.currency;
-    }
 }

@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.2'
 	id 'io.spring.dependency-management' version '1.1.4'
-	id 'com.google.protobuf' version '0.8.17'
+	id 'com.google.protobuf' version '0.9.4'
 }
 
 group = 'com.swiggy'
@@ -29,10 +29,9 @@ dependencies {
 	implementation 'io.grpc:grpc-netty-shaded:1.61.1'
 	implementation 'io.grpc:grpc-protobuf:1.61.1'
 	implementation 'io.grpc:grpc-stub:1.61.1'
-	implementation 'io.grpc:grpc-netty:1.61.1'
 	implementation 'io.grpc:grpc-core:1.61.1'
 	compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
-	implementation("net.devh:grpc-spring-boot-starter:3.0.0.RELEASE")
+	runtimeOnly 'io.grpc:grpc-netty-shaded:1.61.1'
 }
 
 protobuf {
@@ -41,14 +40,11 @@ protobuf {
 	}
 	plugins {
 		grpc {
-			artifact = 'io.grpc:protoc-gen-grpc-java:1.22.1'
+			artifact = 'io.grpc:protoc-gen-grpc-java:1.61.0'
 		}
 	}
 	generateProtoTasks {
 		all().each { task ->
-			task.builtins {
-				java {}
-			}
 			task.plugins {
 				grpc {}
 			}
