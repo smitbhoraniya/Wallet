@@ -1,6 +1,5 @@
 package com.swiggy.wallet.services;
 
-import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.enums.IntraWalletTransactionType;
 import com.swiggy.wallet.execptions.*;
 import com.swiggy.wallet.models.*;
@@ -16,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,30 +47,22 @@ public class TransactionService implements ITransactionService {
         Wallet receiverWallet = walletRepository.findByIdAndUser(transactionRequestModel.getReceiverWalletId(), receiver)
                 .orElseThrow(() -> new WalletNotFoundException("Receiver wallet not found."));
 
-        senderWallet.withdraw(transactionRequestModel.getMoney());
-        receiverWallet.deposit(transactionRequestModel.getMoney());
-
         IntraWalletTransaction withdraw = intraWalletTransactionRepository.save(
                 new IntraWalletTransaction(transactionRequestModel.getMoney(), IntraWalletTransactionType.WITHDRAW, senderWallet));
         IntraWalletTransaction deposit = intraWalletTransactionRepository.save(
                 new IntraWalletTransaction(transactionRequestModel.getMoney(), IntraWalletTransactionType.DEPOSIT, receiverWallet));
 
-        double serviceCharge = 0;
-        if (senderWallet.getMoney().getCurrency() != receiverWallet.getMoney().getCurrency()) {
-            double amountInBaseCurrency = transactionRequestModel.getMoney().getCurrency().convertToBase(transactionRequestModel.getMoney().getAmount());
-            if (amountInBaseCurrency - 10 < 0) {
-                throw new InsufficientMoneyException("Transfer money is less than service charge.");
-            }
-            double amountToTransfer = amountInBaseCurrency - 10;
-            serviceCharge = 10;
-            double amountInWalletCurrency = transactionRequestModel.getMoney().getCurrency().convertFromBase(amountToTransfer);
-            transactionRequestModel.getMoney().setAmount(amountInWalletCurrency);
-        }
-
-        Transaction transactionToSave = new Transaction(sender, receiver, transactionRequestModel.getMoney(), new Money(serviceCharge, Currency.RUPEE), deposit, withdraw);
+        Transaction transaction = senderWallet.transfer(sender, receiver, receiverWallet, transactionRequestModel.getMoney());
+        Transaction transactionToSave = new Transaction(sender, receiver, transaction.getServiceCharge(), deposit, withdraw);
         transactionRepository.save(transactionToSave);
 
-        return new TransactionResponseModel(sender.getUserName(), receiver.getUserName(), transactionRequestModel.getMoney(), transactionToSave.getCreatedAt(), new Money(serviceCharge, Currency.RUPEE));
+        return new TransactionResponseModel(
+                sender.getUserName(),
+                receiver.getUserName(),
+                deposit,
+                withdraw,
+                transactionToSave.getServiceCharge(),
+                transactionToSave.getCreatedAt());
     }
 
     @Override
@@ -86,16 +78,55 @@ public class TransactionService implements ITransactionService {
             transactions = transactionRepository.findBySenderOrRecipientName(user);
         }
 
-        return transactions.stream()
+        List<IntraWalletTransaction> intraWalletTransactions;
+        if (dateTimes.length > 0 && dateTimes[0] != null && dateTimes[1] != null) {
+            intraWalletTransactions = intraWalletTransactionRepository.findAllByUserAndCreatedAt(user, dateTimes[0], dateTimes[1]);
+        } else {
+            intraWalletTransactions = intraWalletTransactionRepository.findAllByUserId(user);
+        }
+        for (Transaction transaction: transactions) {
+            intraWalletTransactions.remove(transaction.getDeposit());
+            intraWalletTransactions.remove(transaction.getWithdraw());
+        }
+
+        List<TransactionResponseModel> transactionResponseModelList = transactions.stream()
                 .map(transaction ->
                         new TransactionResponseModel(
                                 transaction.getSender().getUserName(),
                                 transaction.getReceiver().getUserName(),
-                                transaction.getTransferredMoney(),
-                                transaction.getCreatedAt(),
-                                transaction.getServiceCharge()
+                                transaction.getDeposit(),
+                                transaction.getWithdraw(),
+                                transaction.getServiceCharge(),
+                                transaction.getCreatedAt()
                         )
                 )
                 .toList();
+
+        List<TransactionResponseModel> intraWalletTransactionResponse = intraWalletTransactions.stream()
+                .map(transaction -> {
+                    IntraWalletTransaction deposit = null;
+                    IntraWalletTransaction withdraw = null;
+
+                    if (transaction.getType() == IntraWalletTransactionType.DEPOSIT) {
+                        deposit = transaction;
+                    } else if (transaction.getType() == IntraWalletTransactionType.WITHDRAW) {
+                        withdraw = transaction;
+                    }
+
+                    return new TransactionResponseModel(
+                            null,
+                            null,
+                            deposit,
+                            withdraw,
+                            null,
+                            transaction.getCreatedAt()
+                    );}
+                )
+                .toList();
+
+        List<TransactionResponseModel> finalResponse = new ArrayList<>();
+        finalResponse.addAll(transactionResponseModelList);
+        finalResponse.addAll(intraWalletTransactionResponse);
+        return finalResponse;
     }
 }

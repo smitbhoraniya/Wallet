@@ -4,6 +4,7 @@ import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.models.Money;
+import com.swiggy.wallet.models.Transaction;
 import com.swiggy.wallet.models.User;
 import com.swiggy.wallet.models.Wallet;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,5 +69,52 @@ public class WalletTest {
         Wallet wallet = new Wallet(user);
 
         assertEquals(Currency.DOLLAR, wallet.getMoney().getCurrency());
+    }
+
+    @Test
+    void expectTransferMoneyToOtherWalletSuccessful() {
+        User sender = new User("sender", "password", Country.INDIA);
+        User receiver = new User("receiver", "password", Country.INDIA);
+        Wallet senderWallet = spy(new Wallet(sender));
+        Wallet receiverWallet = spy(new Wallet(receiver));
+        Money money1 = new Money(100, Currency.RUPEE);
+        senderWallet.deposit(new Money(100, Currency.RUPEE));
+
+        Transaction actual = senderWallet.transfer(sender, receiver, receiverWallet, money1);
+
+        Transaction expected = new Transaction(null, sender, receiver, new Money(0.0, Currency.RUPEE), actual.getCreatedAt(), null, null);
+        assertEquals(expected, actual);
+        assertEquals(0, senderWallet.getMoney().getAmount());
+        assertEquals(100, receiverWallet.getMoney().getAmount());
+        verify(senderWallet, times(1)).withdraw(any());
+        verify(receiverWallet, times(1)).deposit(any());
+        verify(receiverWallet, times(1)).deposit(any());
+    }
+
+    @Test
+    void expectTransferMoneyToOtherWalletWithDifferentCurrencySuccessful() {
+        User sender = new User("sender", "password", Country.INDIA);
+        User receiver = new User("receiver", "password", Country.AMERICA);
+        Wallet senderWallet = spy(new Wallet(sender));
+        Wallet receiverWallet = spy(new Wallet(receiver));
+        Money money1 = new Money(100, Currency.RUPEE);
+        senderWallet.deposit(new Money(100, Currency.RUPEE));
+
+        Transaction actual = senderWallet.transfer(sender, receiver, receiverWallet, money1);
+
+        Transaction expected = new Transaction(
+                null,
+                sender,
+                receiver,
+                new Money(10.0, Currency.RUPEE),
+                actual.getCreatedAt(),
+                null,
+                null);
+        assertEquals(expected, actual);
+        assertEquals(0, senderWallet.getMoney().getAmount());
+        assertEquals(1.125, receiverWallet.getMoney().getAmount());
+        verify(senderWallet, times(1)).withdraw(any());
+        verify(receiverWallet, times(1)).deposit(any());
+        verify(receiverWallet, times(1)).deposit(any());
     }
 }

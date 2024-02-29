@@ -18,14 +18,14 @@ public class WalletController {
     @Autowired
     private IWalletService walletService;
 
-    @PutMapping("/{id}/withdraw")
+    @PostMapping(value = "/{id}/intra-wallet-transaction", headers = "type=withdraw")
     public ResponseEntity<WalletResponseModel> withdraw(@RequestBody WalletRequestModel money, @PathVariable int id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         return ResponseEntity.ok(walletService.withdraw(id, username, money));
     }
 
-    @PutMapping("/{id}/deposit")
+    @PostMapping(value = "/{id}/intra-wallet-transaction", headers = "type=deposit")
     public ResponseEntity<WalletResponseModel> deposit(@RequestBody WalletRequestModel money, @PathVariable int id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();

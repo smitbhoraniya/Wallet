@@ -52,7 +52,7 @@ public class UsersControllerTest {
 
         when(userService.register(userRequestModel)).thenReturn(userResponseModel);
 
-        mockMvc.perform(post("/api/v1/user")
+        mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequestModel)))
                 .andExpect(status().isCreated());
@@ -66,7 +66,7 @@ public class UsersControllerTest {
 
         when(userService.register(userRequestModel)).thenThrow(UserAlreadyExistsException.class);
 
-        mockMvc.perform(post("/api/v1/user")
+        mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userRequestModel)))
                 .andExpect(status().isConflict());
@@ -76,7 +76,7 @@ public class UsersControllerTest {
     @Test
     @WithMockUser(username = "user")
     void expectUserDeleted() throws Exception {
-        mockMvc.perform(delete("/api/v1/user")
+        mockMvc.perform(delete("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
         verify(userService, times(1)).delete();
@@ -87,7 +87,7 @@ public class UsersControllerTest {
     void expectUserNotFoundInUserDeleted() throws Exception {
         doThrow(UserNotFoundException.class).when(userService).delete();
 
-        mockMvc.perform(delete("/api/v1/user")
+        mockMvc.perform(delete("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
         verify(userService, times(1)).delete();

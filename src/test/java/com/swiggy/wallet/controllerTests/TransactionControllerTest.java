@@ -6,6 +6,7 @@ import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
 import com.swiggy.wallet.models.Money;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
+import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.services.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,10 +17,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -42,13 +44,15 @@ public class TransactionControllerTest {
     @Test
     @WithMockUser(username = "sender")
     void expectTransactionSuccessful() throws Exception {
-        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", 1, 2, new Money(100, Currency.RUPEE));
+        Money money = new Money(100, Currency.RUPEE);
+        TransactionRequestModel transactionRequestModel = new TransactionRequestModel("sender", 1, 2, money);
         String requestJson = objectMapper.writeValueAsString(transactionRequestModel);
 
-        mockMvc.perform(put("/api/v1/transactions")
+        mockMvc.perform(post("/api/v1/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isOk());
+
         verify(transactionService, times(1)).transaction(transactionRequestModel);
     }
 
@@ -60,7 +64,7 @@ public class TransactionControllerTest {
 
         when(transactionService.transaction(transactionRequestModel)).thenThrow(UserNotFoundException.class);
 
-        mockMvc.perform(put("/api/v1/transactions")
+        mockMvc.perform(post("/api/v1/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound());
@@ -75,7 +79,7 @@ public class TransactionControllerTest {
 
         when(transactionService.transaction(transactionRequestModel)).thenThrow(SameUserTransactionException.class);
 
-        mockMvc.perform(put("/api/v1/transactions")
+        mockMvc.perform(post("/api/v1/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());

@@ -1,13 +1,17 @@
 package com.swiggy.wallet.modelTests;
 
+import com.swiggy.wallet.clients.CurrencyConvertClient;
 import com.swiggy.wallet.enums.Currency;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.InvalidAmountException;
 import com.swiggy.wallet.models.Money;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class MoneyTest {
     @Test

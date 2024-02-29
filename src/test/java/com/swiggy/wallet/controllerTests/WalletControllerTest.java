@@ -38,8 +38,9 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/1/deposit")
+        mockMvc.perform(post("/api/v1/wallets/1/intra-wallet-transaction")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("type", "deposit")
                         .content(requestBody))
                 .andExpect(status().isOk());
 
@@ -51,8 +52,9 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(100.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/1/deposit")
+        mockMvc.perform(post("/api/v1/wallets/1/intra-wallet-transaction")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("type", "deposit")
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
         verify(walletService, never()).deposit(anyInt(), anyString(), any());
@@ -64,8 +66,9 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/1/withdraw")
+        mockMvc.perform(post("/api/v1/wallets/1//intra-wallet-transaction")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("type", "withdraw")
                         .content(requestBody))
                 .andExpect(status().isOk());
         verify(walletService, times(1)).withdraw(anyInt(), anyString(), any(WalletRequestModel.class));
@@ -76,8 +79,9 @@ public class WalletControllerTest {
         WalletRequestModel requestModel = new WalletRequestModel(50.0, Currency.RUPEE);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/1/withdraw")
+        mockMvc.perform(post("/api/v1/wallets/1//intra-wallet-transaction")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("type", "withdraw")
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
         verify(walletService, never()).withdraw(anyInt(), anyString(), any());
@@ -100,8 +104,9 @@ public class WalletControllerTest {
         when(walletService.deposit(1, "user", requestModel)).thenThrow(UnauthorizedWalletException.class);
 
         String requestBody = objectMapper.writeValueAsString(requestModel);
-        mockMvc.perform(put("/api/v1/wallets/1/deposit")
+        mockMvc.perform(post("/api/v1/wallets/1/intra-wallet-transaction")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("type", "deposit")
                         .content(requestBody))
                 .andExpect(status().isForbidden());
         verify(walletService, times(1)).deposit(anyInt(), anyString(), any(WalletRequestModel.class));

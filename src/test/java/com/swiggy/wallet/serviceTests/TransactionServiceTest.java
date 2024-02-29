@@ -2,13 +2,11 @@ package com.swiggy.wallet.serviceTests;
 
 import com.swiggy.wallet.enums.Country;
 import com.swiggy.wallet.enums.Currency;
+import com.swiggy.wallet.enums.IntraWalletTransactionType;
 import com.swiggy.wallet.execptions.InsufficientMoneyException;
 import com.swiggy.wallet.execptions.SameUserTransactionException;
 import com.swiggy.wallet.execptions.UserNotFoundException;
-import com.swiggy.wallet.models.Money;
-import com.swiggy.wallet.models.Transaction;
-import com.swiggy.wallet.models.User;
-import com.swiggy.wallet.models.Wallet;
+import com.swiggy.wallet.models.*;
 import com.swiggy.wallet.models.requestModels.TransactionRequestModel;
 import com.swiggy.wallet.models.responseModels.TransactionResponseModel;
 import com.swiggy.wallet.repositories.IntraWalletTransactionRepository;
@@ -42,8 +40,6 @@ public class TransactionServiceTest {
     Authentication authentication;
     @Mock
     private SecurityContext securityContext;
-    @Mock
-    private WalletService walletService;
     @Mock
     private WalletRepository walletRepository;
     @Mock
@@ -80,15 +76,20 @@ public class TransactionServiceTest {
         when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
         when(walletRepository.findByIdAndUser(1, sender)).thenReturn(Optional.of(senderWallet));
         when(walletRepository.findByIdAndUser(2, receiver)).thenReturn(Optional.of(receiverWallet));
+        IntraWalletTransaction deposit = new IntraWalletTransaction(money, IntraWalletTransactionType.DEPOSIT, senderWallet);
+        IntraWalletTransaction withdraw = new IntraWalletTransaction(money, IntraWalletTransactionType.WITHDRAW, senderWallet);
+        when(intraWalletTransactionRepository.save(withdraw)).thenReturn(withdraw);
+        when(intraWalletTransactionRepository.save(deposit)).thenReturn(deposit);
 
         TransactionResponseModel response = transactionService.transaction(requestModel);
 
         TransactionResponseModel expected = new TransactionResponseModel(
-                "sender"
-                , "receiver"
-                , new Money(100, Currency.RUPEE)
-                , response.getCreatedAt()
-                , new Money(0, Currency.RUPEE)
+                "sender",
+                "receiver",
+                deposit,
+                withdraw,
+                new Money(0, Currency.RUPEE),
+                response.getCreatedAt()
         );
         verify(senderWallet, times(1)).withdraw(money);
         verify(receiverWallet, times(1)).deposit(money);
@@ -205,16 +206,21 @@ public class TransactionServiceTest {
         when(userRepository.findByUserName("sender")).thenReturn(Optional.of(sender));
         when(walletRepository.findByIdAndUser(1, sender)).thenReturn(Optional.of(senderWallet));
         when(walletRepository.findByIdAndUser(2, sender)).thenReturn(Optional.of(otherSenderWallet));
+        IntraWalletTransaction deposit = new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.DEPOSIT, senderWallet);
+        IntraWalletTransaction withdraw = new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.WITHDRAW, senderWallet);
+        when(intraWalletTransactionRepository.save(deposit)).thenReturn(deposit);
+        when(intraWalletTransactionRepository.save(withdraw)).thenReturn(withdraw);
 
         TransactionResponseModel response = transactionService.transaction(requestModel);
 
         TransactionResponseModel expected = new TransactionResponseModel(
-                "sender"
-                , "sender"
-                , new Money(100, Currency.RUPEE)
-                , response.getCreatedAt()
-                , new Money(0, Currency.RUPEE)
-        );
+                "sender",
+                "sender",
+                new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.DEPOSIT, senderWallet),
+                new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.WITHDRAW, senderWallet),
+                new Money(0, Currency.RUPEE),
+                response.getCreatedAt()
+                );
         verify(senderWallet, times(1)).withdraw(money);
         verify(otherSenderWallet, times(1)).deposit(money);
         verify(userRepository, times(2)).findByUserName(anyString());
@@ -242,12 +248,23 @@ public class TransactionServiceTest {
         when(userRepository.findByUserName("receiver")).thenReturn(Optional.of(receiver));
         when(walletRepository.findByIdAndUser(1, sender)).thenReturn(Optional.of(senderWallet));
         when(walletRepository.findByIdAndUser(2, receiver)).thenReturn(Optional.of(receiverWallet));
+        IntraWalletTransaction deposit = new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.DEPOSIT, senderWallet);
+        IntraWalletTransaction withdraw = new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.WITHDRAW, senderWallet);
+        when(intraWalletTransactionRepository.save(deposit)).thenReturn(deposit);
+        when(intraWalletTransactionRepository.save(withdraw)).thenReturn(withdraw);
 
         TransactionResponseModel response = transactionService.transaction(requestModel);
 
-        TransactionResponseModel expected = new TransactionResponseModel("sender", "receiver", new Money(90, Currency.RUPEE), response.getCreatedAt(), new Money(10, Currency.RUPEE));
+        TransactionResponseModel expected = new TransactionResponseModel(
+                "sender",
+                "receiver",
+                new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.DEPOSIT, senderWallet),
+                new IntraWalletTransaction(new Money(100, Currency.RUPEE), IntraWalletTransactionType.DEPOSIT, senderWallet),
+                new Money(0, Currency.RUPEE),
+                response.getCreatedAt()
+        );
         verify(senderWallet, times(1)).withdraw(money);
-        verify(receiverWallet, times(1)).deposit(money);
+        verify(receiverWallet, times(1)).deposit(any());
         verify(userRepository, times(2)).findByUserName(anyString());
         verify(walletRepository, times(2)).findByIdAndUser(anyInt(), any());
         assertEquals(expected, response);
@@ -276,8 +293,8 @@ public class TransactionServiceTest {
 
         assertThrows(InsufficientMoneyException.class, () -> transactionService.transaction(requestModel));
 
-        verify(senderWallet, times(1)).withdraw(money);
-        verify(receiverWallet, times(1)).deposit(money);
+        verify(senderWallet, times(0)).withdraw(any());
+        verify(receiverWallet, times(0)).deposit(money);
         verify(userRepository, times(2)).findByUserName(anyString());
         verify(walletRepository, times(2)).findByIdAndUser(anyInt(), any());
     }

@@ -1,5 +1,6 @@
 package com.swiggy.wallet.models;
 
+import com.swiggy.wallet.enums.Currency;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,8 +23,6 @@ public class Transaction {
     @ManyToOne(cascade = CascadeType.ALL)
     private User receiver;
 
-    private Money transferredMoney;
-
     @AttributeOverrides({
             @AttributeOverride(name = "amount", column = @Column(name = "service_charge_amount")),
             @AttributeOverride(name = "currency", column = @Column(name = "service_charge_currency"))
@@ -38,24 +37,21 @@ public class Transaction {
     @OneToOne(cascade = CascadeType.ALL)
     private IntraWalletTransaction withdraw;
 
-    public Transaction(User sender, User receiver, Money transferredMoney) {
+    public Transaction(User sender, User receiver) {
         this.sender = sender;
         this.receiver = receiver;
-        this.transferredMoney = transferredMoney;
-        this.serviceCharge = new Money(0, transferredMoney.getCurrency());
+        this.serviceCharge = new Money(0, Currency.RUPEE);
     }
 
-    public Transaction(User sender, User receiver, Money transferredMoney, Money serviceCharge) {
+    public Transaction(User sender, User receiver, Money serviceCharge) {
         this.sender = sender;
         this.receiver = receiver;
-        this.transferredMoney = transferredMoney;
         this.serviceCharge = serviceCharge;
     }
 
-    public Transaction(User sender, User receiver, Money transferredMoney, Money serviceCharge, IntraWalletTransaction deposit, IntraWalletTransaction withdraw) {
+    public Transaction(User sender, User receiver, Money serviceCharge, IntraWalletTransaction deposit, IntraWalletTransaction withdraw) {
         this.sender = sender;
         this.receiver = receiver;
-        this.transferredMoney = transferredMoney;
         this.serviceCharge = serviceCharge;
         this.deposit = deposit;
         this.withdraw = withdraw;

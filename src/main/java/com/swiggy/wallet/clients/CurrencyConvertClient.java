@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import proto.*;
 
 public class CurrencyConvertClient {
-    public double convert(Money money, Currency currency) {
+    public static double convert(Money money, Currency currency) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext()
                 .build();

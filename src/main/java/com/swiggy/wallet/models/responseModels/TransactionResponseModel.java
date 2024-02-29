@@ -1,5 +1,6 @@
 package com.swiggy.wallet.models.responseModels;
 
+import com.swiggy.wallet.models.IntraWalletTransaction;
 import com.swiggy.wallet.models.Money;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,8 @@ import java.time.LocalDateTime;
 public class TransactionResponseModel {
     private String senderUsername;
     private String receiverUsername;
-    private Money transferredAmount;
-    private LocalDateTime createdAt;
+    private IntraWalletTransaction deposit;
+    private IntraWalletTransaction withdraw;
     private Money serviceCharge;
+    private LocalDateTime createdAt;
 }

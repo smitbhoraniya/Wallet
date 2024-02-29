@@ -17,7 +17,7 @@ public class TransactionController {
     @Autowired
     private ITransactionService transactionService;
 
-    @PutMapping("")
+    @PostMapping("")
     public ResponseEntity<TransactionResponseModel> transaction(@RequestBody TransactionRequestModel transactionRequestModel) {
         TransactionResponseModel response = transactionService.transaction(transactionRequestModel);
         return new ResponseEntity<>(response, HttpStatus.OK);
